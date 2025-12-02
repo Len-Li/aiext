@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+#app {
+  max-width: 520px;
+  margin: 24px auto;
+  padding: 18px 20px 24px;
+  box-sizing: border-box;
+  background: radial-gradient(circle at top left, #0b1120, #020617 45%);
+  border-radius: 14px;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
+}
+
+header h1 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.field span {
+  color: #9ca3af;
+}
+
+input[type="text"],
+input[type="password"] {
+  border-radius: 8px;
+  border: 1px solid rgba(55, 65, 81, 0.9);
+  background: #020617;
+  color: #e5e7eb;
+  padding: 6px 9px;
+  font-size: 13px;
+}
+
+input::placeholder {
+  color: #4b5563;
+}
+
+button#save-btn {
+  margin-top: 6px;
+  align-self: flex-start;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.9);
+  cursor: pointer;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: #e5e7eb;
+  font-size: 13px;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.06s ease;
+}
+
+button#save-btn:hover {
+  background: linear-gradient(135deg, #111827, #0b1120);
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+}
+
+button#save-btn:active {
+  transform: scale(0.97);
+}
+
+#status {
+  min-height: 18px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+#tip {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(75, 85, 99, 0.8);
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+#tip h2 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #e5e7eb;
+}
+
+code {
+  background: rgba(15, 23, 42, 0.9);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM配置选择功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>LLM配置选择功能测试页面</h1>
+    
+    <div class="instructions">
+        <h3>测试说明：</h3>
+        <ol>
+            <li>确保已安装Chrome扩展</li>
+            <li>在扩展设置中配置至少两个LLM配置</li>
+            <li>刷新此页面</li>
+            <li>点击页面右侧的"LLM"悬浮按钮打开聊天面板</li>
+            <li>验证配置下拉框是否显示配置选项</li>
+            <li>尝试切换不同的配置，观察状态提示</li>
+            <li>发送测试消息，验证是否使用了正确的配置</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>测试内容</h2>
+        <p>这是一个用于测试LLM配置选择功能的页面。页面包含一些示例内容，可以用来测试LLM解读功能。</p>
+        
+        <h3>主要功能点</h3>
+        <ul>
+            <li><strong>配置显示</strong>：验证下拉框是否正确显示所有已配置的LLM</li>
+            <li><strong>配置切换</strong>：验证选择不同配置时是否能正确切换</li>
+            <li><strong>状态反馈</strong>：验证切换配置时是否有成功提示</li>
+            <li><strong>配置持久化</strong>：验证刷新页面后配置选择是否保持</li>
+            <li><strong>功能使用</strong>：验证使用不同配置进行对话是否正常</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>示例内容</h2>
+        <p>人工智能（Artificial Intelligence，AI）是计算机科学的一个分支，它企图了解智能的实质，并生产出一种新的能以人类智能相似的方式做出反应的智能机器。</p>
+        
+        <p>该领域的研究包括机器人、语言识别、图像识别、自然语言处理和专家系统等。人工智能从诞生以来，理论和技术日益成熟，应用领域也不断扩大。</p>
+        
+        <p>可以设想，未来人工智能带来的科技产品，将会是人类智慧的"容器"。人工智能可以对人的意识、思维的信息过程的模拟。</p>
+    </div>
+
+    <div class="test-section">
+        <h2>测试步骤</h2>
+        <ol>
+            <li>检查页面右侧是否有"LLM"悬浮按钮</li>
+            <li>点击按钮打开聊天面板</li>
+            <li>观察配置下拉框是否显示配置选项</li>
+            <li>选择不同的配置，观察状态栏提示</li>
+            <li>发送"请总结这个页面"等测试消息</li>
+            <li>验证回复是否来自正确的LLM配置</li>
+        </ol>
+    </div>
+</body>
+</html>

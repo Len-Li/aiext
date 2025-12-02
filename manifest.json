@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "网页 LLM 解读助手",
+  "description": "调用你的 LLM API 来解读当前网页内容，并支持在插件设置中修改 API Key 和模型。",
+  "version": "1.0.0",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_title": "LLM 解读本页",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["overlay.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+
