@@ -11,9 +11,21 @@ if (!window.__llm_reader_overlay_injected__) {
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
+      :root {
+        --llm-reader-base-font-size: 12px;
+        --llm-reader-title-font-size: 13px;
+        --llm-reader-input-font-size: 12px;
+        --llm-reader-chat-font-size: 12px;
+        --llm-reader-status-font-size: 11px;
+        --llm-reader-btn-font-size: 11px;
+        --llm-reader-select-font-size: 11px;
+        --llm-reader-close-font-size: 12px;
+        --llm-reader-role-font-size: 11px;
+      }
+      
       .llm-reader-float-btn {
         position: fixed;
-        right: 24px;
+        right: 0px;
         top: 50%;
         transform: translateY(-50%);
         z-index: 2147483647;
@@ -31,7 +43,7 @@ if (!window.__llm_reader_overlay_injected__) {
         align-items: center;
         justify-content: center;
         color: #ffffff;
-        font-size: 12px;
+        font-size: var(--llm-reader-base-font-size);
         font-weight: 500;
         font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         user-select: none;
@@ -80,7 +92,7 @@ if (!window.__llm_reader_overlay_injected__) {
       }
 
       .llm-reader-panel-title {
-        font-size: 13px;
+        font-size: var(--llm-reader-title-font-size);
         font-weight: 500;
       }
 
@@ -98,7 +110,7 @@ if (!window.__llm_reader_overlay_injected__) {
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #202124;
-        font-size: 11px;
+        font-size: var(--llm-reader-select-font-size);
         outline: none;
         cursor: pointer;
       }
@@ -109,7 +121,7 @@ if (!window.__llm_reader_overlay_injected__) {
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #1f2933;
-        font-size: 11px;
+        font-size: var(--llm-reader-btn-font-size);
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -132,7 +144,45 @@ if (!window.__llm_reader_overlay_injected__) {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 12px;
+        font-size: var(--llm-reader-close-font-size);
+      }
+
+      .llm-reader-font-size-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 8px;
+      }
+
+      .llm-reader-font-size-btn {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #1f2933;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        line-height: 1;
+      }
+
+      .llm-reader-font-size-btn:hover {
+        background: #f6f9fe;
+        border-color: #1a73e8;
+      }
+
+      .llm-reader-font-size-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .llm-reader-font-size-btn:disabled:hover {
+        background: #ffffff;
+        border-color: #dadce0;
       }
 
       .llm-reader-panel-body {
@@ -146,7 +196,7 @@ if (!window.__llm_reader_overlay_injected__) {
       }
 
       .llm-reader-status {
-        font-size: 11px;
+        font-size: var(--llm-reader-status-font-size);
         color: #5f6368;
         min-height: 16px;
       }
@@ -162,20 +212,20 @@ if (!window.__llm_reader_overlay_injected__) {
         display: flex;
         flex-direction: column;
         gap: 6px;
-        font-size: 12px;
+        font-size: var(--llm-reader-chat-font-size);
         box-sizing: border-box;
         padding-bottom: 18px; /* 预留底部空间，避免内容被输入框/缩放角标挡住 */
       }
 
       .llm-reader-chat-item {
         display: flex;
-        gap: 6px;
+        gap: 2px;
       }
 
       .llm-reader-chat-role {
-        font-size: 11px;
+        font-size: var(--llm-reader-role-font-size);
         color: #5f6368;
-        min-width: 36px;
+        min-width: 0;
         text-align: right;
         padding-top: 2px;
       }
@@ -216,7 +266,7 @@ if (!window.__llm_reader_overlay_injected__) {
         background: #ffffff;
         color: #202124;
         padding: 5px 8px;
-        font-size: 12px;
+        font-size: var(--llm-reader-input-font-size);
         box-sizing: border-box;
       }
 
@@ -350,7 +400,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
     const title = document.createElement("div");
     title.className = "llm-reader-panel-title";
-    title.textContent = "网页 LLM 解读";
+    title.textContent = "";
 
     const actions = document.createElement("div");
     actions.className = "llm-reader-panel-actions";
@@ -370,9 +420,27 @@ if (!window.__llm_reader_overlay_injected__) {
     closeBtn.className = "llm-reader-close";
     closeBtn.textContent = "×";
 
+    // 文字大小控制按钮
+    const fontSizeControls = document.createElement("div");
+    fontSizeControls.className = "llm-reader-font-size-controls";
+
+    const decreaseFontSizeBtn = document.createElement("button");
+    decreaseFontSizeBtn.className = "llm-reader-font-size-btn";
+    decreaseFontSizeBtn.textContent = "−";
+    decreaseFontSizeBtn.title = "减小文字大小";
+
+    const increaseFontSizeBtn = document.createElement("button");
+    increaseFontSizeBtn.className = "llm-reader-font-size-btn";
+    increaseFontSizeBtn.textContent = "+";
+    increaseFontSizeBtn.title = "增大文字大小";
+
+    fontSizeControls.appendChild(decreaseFontSizeBtn);
+    fontSizeControls.appendChild(increaseFontSizeBtn);
+
     actions.appendChild(profileSelect);
     actions.appendChild(analyzeBtn);
     actions.appendChild(settingsBtn);
+    actions.appendChild(fontSizeControls);
     actions.appendChild(closeBtn);
     header.appendChild(title);
     header.appendChild(actions);
@@ -455,6 +523,12 @@ if (!window.__llm_reader_overlay_injected__) {
     let dragStartTop = 0;
     let dragStartLeft = 0;
     let hasCustomPos = false;
+    
+    // 滚动控制相关变量
+    let isUserScrolling = true; // 默认为true，表示不自动滚动
+    let userScrollTimeout = null;
+    let lastScrollTop = 0;
+    let autoScrollEnabled = false; // 新增变量，控制是否启用自动滚动
 
     // 悬浮按钮拖动相关状态
     let isDraggingFloat = false;
@@ -470,6 +544,58 @@ if (!window.__llm_reader_overlay_injected__) {
     // LLM 配置（多配置）缓存
     let llmProfiles = [];
     let activeLlmId = null;
+
+    // 文字大小管理
+    let currentFontSize = 12; // 默认文字大小
+    const MIN_FONT_SIZE = 10;
+    const MAX_FONT_SIZE = 20;
+    const FONT_SIZE_STEP = 1;
+
+    function updateFontSize(newSize) {
+      // 确保文字大小在允许范围内
+      newSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, newSize));
+      
+      if (newSize === currentFontSize) return; // 没有变化，直接返回
+      
+      currentFontSize = newSize;
+      
+      // 更新CSS变量
+      document.documentElement.style.setProperty('--llm-reader-base-font-size', currentFontSize + 'px');
+      document.documentElement.style.setProperty('--llm-reader-title-font-size', (currentFontSize + 1) + 'px');
+      document.documentElement.style.setProperty('--llm-reader-input-font-size', currentFontSize + 'px');
+      document.documentElement.style.setProperty('--llm-reader-chat-font-size', currentFontSize + 'px');
+      document.documentElement.style.setProperty('--llm-reader-status-font-size', (currentFontSize - 1) + 'px');
+      document.documentElement.style.setProperty('--llm-reader-btn-font-size', (currentFontSize - 1) + 'px');
+      document.documentElement.style.setProperty('--llm-reader-select-font-size', (currentFontSize - 1) + 'px');
+      document.documentElement.style.setProperty('--llm-reader-close-font-size', currentFontSize + 'px');
+      document.documentElement.style.setProperty('--llm-reader-role-font-size', (currentFontSize - 1) + 'px');
+      
+      // 更新按钮状态
+      decreaseFontSizeBtn.disabled = currentFontSize <= MIN_FONT_SIZE;
+      increaseFontSizeBtn.disabled = currentFontSize >= MAX_FONT_SIZE;
+      
+      // 保存到存储
+      chrome.storage.sync.set({ fontSize: currentFontSize });
+      
+      // 显示状态提示
+      setStatus(`文字大小: ${currentFontSize}px`);
+      setTimeout(() => setStatus(""), 1500);
+    }
+
+    async function loadFontSize() {
+      try {
+        const data = await chrome.storage.sync.get(['fontSize']);
+        const savedFontSize = data.fontSize;
+        if (savedFontSize && savedFontSize >= MIN_FONT_SIZE && savedFontSize <= MAX_FONT_SIZE) {
+          updateFontSize(savedFontSize);
+        } else {
+          updateFontSize(currentFontSize); // 使用默认值
+        }
+      } catch (e) {
+        console.error('加载文字大小设置失败:', e);
+        updateFontSize(currentFontSize); // 使用默认值
+      }
+    }
 
     function setStatus(text, isError = false) {
       status.textContent = text || "";
@@ -742,6 +868,7 @@ if (!window.__llm_reader_overlay_injected__) {
           floatHasCustomPos = true;
           floatBtn.style.right = "auto";
           floatBtn.style.bottom = "auto";
+          floatBtn.style.transform = "none"; // 移除transform，避免位置计算错误
         }
 
         floatBtn.style.left = newLeft + "px";
@@ -921,7 +1048,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
       const roleEl = document.createElement("div");
       roleEl.className = "llm-reader-chat-role";
-      roleEl.textContent = role === "assistant" ? "助手" : "我";
+      roleEl.textContent = "";
 
       const bubble = document.createElement("div");
       bubble.className =
@@ -935,10 +1062,57 @@ if (!window.__llm_reader_overlay_injected__) {
       item.appendChild(bubble);
 
       chatList.appendChild(item);
-      chatList.scrollTop = chatList.scrollHeight;
+      
+      // 只有在启用自动滚动且用户没有主动滚动时才自动滚动到底部
+      if (autoScrollEnabled && !isUserScrolling) {
+        chatList.scrollTop = chatList.scrollHeight;
+      }
 
       return bubble;
     }
+
+    // 智能滚动函数：根据用户滚动状态决定是否自动滚动
+    function smartScrollToBottom() {
+      if (autoScrollEnabled && !isUserScrolling) {
+        chatList.scrollTop = chatList.scrollHeight;
+      }
+    }
+
+    // 添加滚动事件监听器来检测用户是否在主动滚动
+    chatList.addEventListener("scroll", () => {
+      const currentScrollTop = chatList.scrollTop;
+      const scrollHeight = chatList.scrollHeight;
+      const clientHeight = chatList.clientHeight;
+      
+      // 检测用户是否向上滚动（不在底部）
+      const isAtBottom = Math.abs(scrollHeight - clientHeight - currentScrollTop) < 10;
+      
+      if (!isAtBottom && currentScrollTop < lastScrollTop) {
+        // 用户向上滚动，标记为用户主动滚动
+        isUserScrolling = true;
+        
+        // 清除之前的超时
+        if (userScrollTimeout) {
+          clearTimeout(userScrollTimeout);
+        }
+        
+        // 3秒后重置用户滚动状态
+        userScrollTimeout = setTimeout(() => {
+          isUserScrolling = false;
+        }, 3000);
+      } else if (isAtBottom) {
+        // 用户滚动到底部，重置用户滚动状态
+        isUserScrolling = false;
+        if (userScrollTimeout) {
+          clearTimeout(userScrollTimeout);
+          userScrollTimeout = null;
+        }
+        // 如果用户滚动到底部，启用自动滚动
+        autoScrollEnabled = true;
+      }
+      
+      lastScrollTop = currentScrollTop;
+    });
 
     async function ensurePageData() {
       if (pageDataCache) return pageDataCache;
@@ -1112,7 +1286,7 @@ ${bodyText}`,
           messages,
           (delta, full) => {
             assistantBubble.innerHTML = markdownToHtml(full);
-            chatList.scrollTop = chatList.scrollHeight;
+            smartScrollToBottom();
           },
           (full) => {
             messages.push({ role: "assistant", content: full });
@@ -1157,7 +1331,7 @@ ${bodyText}`,
           promptMessages,
           (delta, full) => {
             assistantBubble.innerHTML = markdownToHtml(full);
-            chatList.scrollTop = chatList.scrollHeight;
+            smartScrollToBottom();
           },
           (full) => {
             messages = promptMessages.concat({ role: "assistant", content: full });
@@ -1185,8 +1359,18 @@ ${bodyText}`,
       }
     });
 
+    // 添加文字大小控制按钮的事件监听器
+    decreaseFontSizeBtn.addEventListener("click", () => {
+      updateFontSize(currentFontSize - FONT_SIZE_STEP);
+    });
+
+    increaseFontSizeBtn.addEventListener("click", () => {
+      updateFontSize(currentFontSize + FONT_SIZE_STEP);
+    });
+
     // 初始化时加载配置
     loadProfiles();
+    loadFontSize();
   }
 
   // 等文档可用后渲染
