@@ -31,31 +31,32 @@ if (!window.__llm_reader_overlay_injected__) {
         z-index: 2147483647;
         width: 56px;
         height: 56px;
-        border-radius: 16px;
         border: none;
-        background: #1a73e8;
-        box-shadow:
-          0 3px 5px -1px rgba(0, 0, 0, 0.2),
-          0 6px 10px 0 rgba(0, 0, 0, 0.14),
-          0 1px 18px 0 rgba(0, 0, 0, 0.12);
+        background: transparent;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffffff;
-        font-size: var(--llm-reader-base-font-size);
-        font-weight: 500;
-        font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         user-select: none;
-        letter-spacing: 0.03em;
+        padding: 0;
+        box-sizing: border-box;
+        pointer-events: auto;
       }
 
-      .llm-reader-float-btn:hover {
-        background: #185abc;
-        box-shadow:
-          0 5px 5px -3px rgba(0, 0, 0, 0.2),
-          0 8px 10px 1px rgba(0, 0, 0, 0.14),
-          0 3px 14px 2px rgba(0, 0, 0, 0.12);
+      .llm-reader-float-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        pointer-events: none;
+        user-select: none;
+        transition: opacity 0.2s, transform 0.2s;
+      }
+
+      .llm-reader-float-btn:hover img {
+        opacity: 0.8;
+        transform: scale(1.05);
+        transition: opacity 0.2s, transform 0.2s;
       }
 
       .llm-reader-panel {
@@ -249,6 +250,52 @@ if (!window.__llm_reader_overlay_injected__) {
         background: #ffffff;
       }
 
+      .llm-reader-chat-bubble-collapsible {
+        position: relative;
+      }
+
+      .llm-reader-chat-bubble-collapsed {
+        max-height: 150px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .llm-reader-chat-bubble-collapsed::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        pointer-events: none;
+      }
+
+      .llm-reader-chat-bubble-collapsed.llm-reader-chat-bubble-user::after {
+        background: linear-gradient(to bottom, rgba(232, 240, 254, 0), rgba(232, 240, 254, 1));
+      }
+
+      .llm-reader-chat-bubble-collapsed.llm-reader-chat-bubble-assistant::after {
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+      }
+
+      .llm-reader-chat-expand-btn {
+        margin-top: 4px;
+        padding: 2px 8px;
+        font-size: 11px;
+        color: #1a73e8;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .llm-reader-chat-expand-btn:hover {
+        text-decoration: underline;
+      }
+
       .llm-reader-input-row {
         display: flex;
         align-items: flex-end;
@@ -379,6 +426,52 @@ if (!window.__llm_reader_overlay_injected__) {
         height: 4px;
         cursor: ns-resize;
       }
+
+      .llm-reader-navigation-controls {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: 8px;
+      }
+
+      .llm-reader-nav-btn {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #1f2933;
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        line-height: 1;
+        padding: 0;
+      }
+
+      .llm-reader-nav-btn:hover {
+        background: #f6f9fe;
+        border-color: #1a73e8;
+      }
+
+      .llm-reader-nav-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .llm-reader-nav-btn:disabled:hover {
+        background: #ffffff;
+        border-color: #dadce0;
+      }
+
+      .llm-reader-nav-info {
+        font-size: var(--llm-reader-status-font-size);
+        color: #5f6368;
+        margin: 0 4px;
+        white-space: nowrap;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -388,7 +481,17 @@ if (!window.__llm_reader_overlay_injected__) {
 
     const floatBtn = document.createElement("div");
     floatBtn.className = "llm-reader-float-btn";
-    floatBtn.textContent = "LLM";
+    
+    // 创建图片元素代替文字
+    const logoImg = document.createElement("img");
+    logoImg.src = chrome.runtime.getURL("img/logo.png");
+    logoImg.alt = "LLM";
+    logoImg.onerror = function() {
+      // 如果图片加载失败，显示文字作为后备
+      floatBtn.textContent = "LLM";
+      floatBtn.style.padding = "0";
+    };
+    floatBtn.appendChild(logoImg);
 
     const panel = document.createElement("div");
     panel.className = "llm-reader-panel";
@@ -437,10 +540,35 @@ if (!window.__llm_reader_overlay_injected__) {
     fontSizeControls.appendChild(decreaseFontSizeBtn);
     fontSizeControls.appendChild(increaseFontSizeBtn);
 
+    // 导航控制按钮
+    const navigationControls = document.createElement("div");
+    navigationControls.className = "llm-reader-navigation-controls";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "llm-reader-nav-btn";
+    prevBtn.textContent = "↑";
+    prevBtn.title = "上一个问答";
+    prevBtn.disabled = true;
+
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "llm-reader-nav-btn";
+    nextBtn.textContent = "↓";
+    nextBtn.title = "下一个问答";
+    nextBtn.disabled = true;
+
+    const navInfo = document.createElement("span");
+    navInfo.className = "llm-reader-nav-info";
+    navInfo.textContent = "";
+
+    navigationControls.appendChild(prevBtn);
+    navigationControls.appendChild(navInfo);
+    navigationControls.appendChild(nextBtn);
+
     actions.appendChild(profileSelect);
     actions.appendChild(analyzeBtn);
     actions.appendChild(settingsBtn);
     actions.appendChild(fontSizeControls);
+    actions.appendChild(navigationControls);
     actions.appendChild(closeBtn);
     header.appendChild(title);
     header.appendChild(actions);
@@ -525,10 +653,8 @@ if (!window.__llm_reader_overlay_injected__) {
     let hasCustomPos = false;
     
     // 滚动控制相关变量
-    let isUserScrolling = true; // 默认为true，表示不自动滚动
-    let userScrollTimeout = null;
+    let shouldAutoScroll = false; // 是否应该自动滚动（只有用户手动滚动到底部时才为true）
     let lastScrollTop = 0;
-    let autoScrollEnabled = false; // 新增变量，控制是否启用自动滚动
 
     // 悬浮按钮拖动相关状态
     let isDraggingFloat = false;
@@ -550,6 +676,10 @@ if (!window.__llm_reader_overlay_injected__) {
     const MIN_FONT_SIZE = 10;
     const MAX_FONT_SIZE = 20;
     const FONT_SIZE_STEP = 1;
+
+    // 问答导航相关变量
+    let currentQaIndex = -1; // 当前显示的问答索引，-1表示显示全部
+    let qaPairs = []; // 问答对数组
 
     function updateFontSize(newSize) {
       // 确保文字大小在允许范围内
@@ -916,6 +1046,7 @@ if (!window.__llm_reader_overlay_injected__) {
       let startWidth = 0;
       let startHeight = 0;
       let startTop = 0;
+      let startLeft = 0;
       // right / left / top / bottom / bottom-right / bottom-left / top-right / top-left
       let resizeMode = "bottom-right";
 
@@ -963,6 +1094,20 @@ if (!window.__llm_reader_overlay_injected__) {
         newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
         newHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
 
+        // 如果从左侧缩放，需要同时更新 left，保持右侧边缘固定
+        if (isLeft) {
+          const viewportWidth =
+            window.innerWidth || document.documentElement.clientWidth;
+          const margin = 10;
+          // 计算新的left位置：保持右侧边缘不变
+          const actualDx = startWidth - newWidth; // 宽度变化量
+          let newLeft = startLeft + actualDx;
+          // 确保面板不会完全拖出屏幕左侧
+          newLeft = Math.max(margin, Math.min(viewportWidth - newWidth - margin, newLeft));
+          panel.style.left = newLeft + "px";
+          panel.style.right = "auto";
+        }
+
         // 如果从顶部缩放，需要同时更新 top，保证面板不出屏幕
         if (isTop) {
           const viewportHeight =
@@ -997,13 +1142,16 @@ if (!window.__llm_reader_overlay_injected__) {
         startWidth = rect.width;
         startHeight = rect.height;
 
-        // 确保使用固定 top，而不是 transform 居中
+        // 确保使用固定 top 和 left，而不是 transform 居中或 right 定位
         if (!hasCustomPos) {
           hasCustomPos = true;
           panel.style.transform = "none";
           panel.style.top = rect.top + "px";
+          panel.style.left = rect.left + "px";
+          panel.style.right = "auto";
         }
         startTop = parseFloat(panel.style.top || rect.top);
+        startLeft = parseFloat(panel.style.left || rect.left);
 
         document.addEventListener("mousemove", onMouseMove);
         document.addEventListener("mouseup", onMouseUp);
@@ -1042,6 +1190,200 @@ if (!window.__llm_reader_overlay_injected__) {
       });
     })();
 
+    // 提取问答对（忽略system消息）
+    function extractQaPairs(messages) {
+      const pairs = [];
+      let currentPair = null;
+      
+      for (const msg of messages) {
+        if (msg.role === "system") {
+          continue; // 跳过system消息
+        }
+        
+        if (msg.role === "user") {
+          // 如果之前有未完成的pair，先保存
+          if (currentPair && currentPair.assistant) {
+            pairs.push(currentPair);
+          }
+          // 开始新的问答对
+          currentPair = { user: msg, assistant: null };
+        } else if (msg.role === "assistant" && currentPair) {
+          currentPair.assistant = msg;
+          pairs.push(currentPair);
+          currentPair = null;
+        }
+      }
+      
+      // 处理最后一个未完成的pair（如果用户刚发送了问题但还没收到回复）
+      if (currentPair) {
+        pairs.push(currentPair);
+      }
+      
+      return pairs;
+    }
+
+    // 渲染聊天消息，支持滚动到指定问答对
+    function renderChatMessages(messagesToShow, scrollToQaIndex = -1) {
+      chatList.innerHTML = "";
+      
+      // 记录需要滚动到的消息索引
+      let scrollToItemIndex = -1;
+      
+      if (scrollToQaIndex >= 0 && qaPairs.length > scrollToQaIndex) {
+        const targetPair = qaPairs[scrollToQaIndex];
+        const targetUserContent = targetPair.user?.content;
+        
+        // 找到目标问答对在消息列表中的位置
+        for (let i = 0; i < messagesToShow.length; i++) {
+          const msg = messagesToShow[i];
+          if (msg.role === "user" && msg.content === targetUserContent) {
+            scrollToItemIndex = i;
+            break;
+          }
+        }
+      }
+      
+      // 渲染所有消息
+      let renderedItemIndex = 0;
+      const COLLAPSE_THRESHOLD = 200; // 超过200字符时折叠
+      
+      for (let i = 0; i < messagesToShow.length; i++) {
+        const msg = messagesToShow[i];
+        if (msg.role === "system") {
+          continue; // 不显示system消息
+        }
+        
+        const item = document.createElement("div");
+        item.className = "llm-reader-chat-item";
+
+        const roleEl = document.createElement("div");
+        roleEl.className = "llm-reader-chat-role";
+        roleEl.textContent = "";
+
+        const bubbleContainer = document.createElement("div");
+        bubbleContainer.style.flex = "1";
+        
+        const bubble = document.createElement("div");
+        const bubbleClass = "llm-reader-chat-bubble " +
+          (msg.role === "assistant"
+            ? "llm-reader-chat-bubble-assistant"
+            : "llm-reader-chat-bubble-user");
+        bubble.className = bubbleClass;
+        bubble.innerHTML = markdownToHtml(msg.content || "");
+        
+        // 检查是否需要折叠（只对用户消息进行折叠）
+        const textLength = (msg.content || "").length;
+        const needsCollapse = msg.role === "user" && textLength > COLLAPSE_THRESHOLD;
+        
+        if (needsCollapse) {
+          bubble.classList.add("llm-reader-chat-bubble-collapsible", "llm-reader-chat-bubble-collapsed");
+          bubble.setAttribute("data-collapsed", "true");
+          
+          const expandBtn = document.createElement("button");
+          expandBtn.className = "llm-reader-chat-expand-btn";
+          expandBtn.textContent = "展开";
+          expandBtn.setAttribute("aria-label", "展开完整内容");
+          
+          expandBtn.addEventListener("click", () => {
+            const isCollapsed = bubble.getAttribute("data-collapsed") === "true";
+            if (isCollapsed) {
+              bubble.classList.remove("llm-reader-chat-bubble-collapsed");
+              bubble.setAttribute("data-collapsed", "false");
+              expandBtn.textContent = "收起";
+            } else {
+              bubble.classList.add("llm-reader-chat-bubble-collapsed");
+              bubble.setAttribute("data-collapsed", "true");
+              expandBtn.textContent = "展开";
+            }
+          });
+          
+          bubbleContainer.appendChild(bubble);
+          bubbleContainer.appendChild(expandBtn);
+        } else {
+          bubbleContainer.appendChild(bubble);
+        }
+
+        item.appendChild(roleEl);
+        item.appendChild(bubbleContainer);
+        chatList.appendChild(item);
+        
+        // 如果这是需要滚动到的消息，添加标记以便后续滚动
+        if (i === scrollToItemIndex) {
+          item.setAttribute("data-scroll-target", "true");
+        }
+        
+        renderedItemIndex++;
+      }
+      
+      // 如果需要滚动到指定问答对
+      if (scrollToQaIndex >= 0) {
+        const scrollTarget = chatList.querySelector('[data-scroll-target="true"]');
+        if (scrollTarget) {
+          setTimeout(() => {
+            scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+            scrollTarget.removeAttribute("data-scroll-target");
+          }, 100);
+        }
+      } else {
+        // 只有用户手动滚动到底部时才自动滚动
+        if (shouldAutoScroll) {
+          chatList.scrollTop = chatList.scrollHeight;
+        }
+      }
+    }
+
+    // 更新导航按钮状态和显示
+    function updateNavigation() {
+      qaPairs = extractQaPairs(messages);
+      const totalQas = qaPairs.length;
+      
+      if (totalQas === 0) {
+        // 没有问答对，禁用导航按钮
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        navInfo.textContent = "";
+        currentQaIndex = -1;
+        // 显示所有消息
+        renderChatMessages(messages, -1);
+        return;
+      }
+      
+      // 如果当前索引无效，默认显示最后一个（最新的）
+      if (currentQaIndex < 0 || currentQaIndex >= totalQas) {
+        currentQaIndex = totalQas - 1;
+      }
+      
+      // 更新按钮状态
+      prevBtn.disabled = currentQaIndex <= 0;
+      nextBtn.disabled = currentQaIndex >= totalQas - 1;
+      
+      // 更新信息显示
+      navInfo.textContent = `${currentQaIndex + 1}/${totalQas}`;
+      
+      // 始终显示所有消息，但高亮当前问答对
+      renderChatMessages(messages, currentQaIndex);
+    }
+
+    // 导航到上一个问答
+    function navigateToPrev() {
+      if (currentQaIndex > 0) {
+        currentQaIndex--;
+        updateNavigation();
+      }
+    }
+
+    // 导航到下一个问答
+    function navigateToNext() {
+      if (currentQaIndex < qaPairs.length - 1) {
+        currentQaIndex++;
+        updateNavigation();
+      }
+    }
+
+    // 添加导航按钮事件监听器
+    prevBtn.addEventListener("click", navigateToPrev);
+    nextBtn.addEventListener("click", navigateToNext);
+
     function appendChatItem(role, text) {
       const item = document.createElement("div");
       item.className = "llm-reader-chat-item";
@@ -1063,52 +1405,36 @@ if (!window.__llm_reader_overlay_injected__) {
 
       chatList.appendChild(item);
       
-      // 只有在启用自动滚动且用户没有主动滚动时才自动滚动到底部
-      if (autoScrollEnabled && !isUserScrolling) {
+      // 只有用户手动滚动到底部时才自动滚动
+      if (shouldAutoScroll) {
         chatList.scrollTop = chatList.scrollHeight;
       }
 
       return bubble;
     }
 
-    // 智能滚动函数：根据用户滚动状态决定是否自动滚动
+    // 智能滚动函数：只有用户手动滚动到底部时才自动滚动
     function smartScrollToBottom() {
-      if (autoScrollEnabled && !isUserScrolling) {
+      if (shouldAutoScroll) {
         chatList.scrollTop = chatList.scrollHeight;
       }
     }
 
-    // 添加滚动事件监听器来检测用户是否在主动滚动
+    // 添加滚动事件监听器来检测用户是否手动滚动到底部
     chatList.addEventListener("scroll", () => {
       const currentScrollTop = chatList.scrollTop;
       const scrollHeight = chatList.scrollHeight;
       const clientHeight = chatList.clientHeight;
       
-      // 检测用户是否向上滚动（不在底部）
+      // 检测用户是否在底部（容差10px）
       const isAtBottom = Math.abs(scrollHeight - clientHeight - currentScrollTop) < 10;
       
-      if (!isAtBottom && currentScrollTop < lastScrollTop) {
-        // 用户向上滚动，标记为用户主动滚动
-        isUserScrolling = true;
-        
-        // 清除之前的超时
-        if (userScrollTimeout) {
-          clearTimeout(userScrollTimeout);
-        }
-        
-        // 3秒后重置用户滚动状态
-        userScrollTimeout = setTimeout(() => {
-          isUserScrolling = false;
-        }, 3000);
-      } else if (isAtBottom) {
-        // 用户滚动到底部，重置用户滚动状态
-        isUserScrolling = false;
-        if (userScrollTimeout) {
-          clearTimeout(userScrollTimeout);
-          userScrollTimeout = null;
-        }
-        // 如果用户滚动到底部，启用自动滚动
-        autoScrollEnabled = true;
+      if (isAtBottom) {
+        // 用户手动滚动到底部，启用自动滚动
+        shouldAutoScroll = true;
+      } else {
+        // 用户不在底部，禁用自动滚动
+        shouldAutoScroll = false;
       }
       
       lastScrollTop = currentScrollTop;
@@ -1251,6 +1577,7 @@ if (!window.__llm_reader_overlay_injected__) {
       input.disabled = true;
       chatList.innerHTML = "";
       messages = [];
+      currentQaIndex = -1; // 重置导航索引
 
       try {
         const pageData = await ensurePageData();
@@ -1291,6 +1618,12 @@ ${bodyText}`,
           (full) => {
             messages.push({ role: "assistant", content: full });
             setStatus("解读完成，可以继续提问。");
+            // 自动跳转到最新的问答
+            qaPairs = extractQaPairs(messages);
+            if (qaPairs.length > 0) {
+              currentQaIndex = qaPairs.length - 1;
+            }
+            updateNavigation(); // 更新导航状态
           }
         );
       } catch (e) {
@@ -1319,12 +1652,17 @@ ${bodyText}`,
       analyzeBtn.disabled = true;
       input.disabled = true;
 
+      // 添加用户消息到 messages
+      const userMsg = { role: "user", content: text };
+      messages = messages.concat(userMsg);
+      
+      // 显示用户消息
       appendChatItem("user", text);
       input.value = "";
       const assistantBubble = appendChatItem("assistant", "");
       setStatus("正在思考，请稍候…");
 
-      const promptMessages = messages.concat({ role: "user", content: text });
+      const promptMessages = messages;
 
       try {
         await streamChat(
@@ -1334,8 +1672,15 @@ ${bodyText}`,
             smartScrollToBottom();
           },
           (full) => {
+            // promptMessages 已经包含了用户消息，只需要添加助手回复
             messages = promptMessages.concat({ role: "assistant", content: full });
             setStatus("已回复，你可以继续提问。");
+            // 自动跳转到最新的问答
+            qaPairs = extractQaPairs(messages);
+            if (qaPairs.length > 0) {
+              currentQaIndex = qaPairs.length - 1;
+            }
+            updateNavigation();
           }
         );
       } catch (e) {
