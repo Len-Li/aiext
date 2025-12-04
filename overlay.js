@@ -239,6 +239,39 @@ if (!window.__llm_reader_overlay_injected__) {
         background: #ffffff;
         white-space: pre-wrap;
         word-break: break-word;
+        line-height: 1.6;
+      }
+
+      .llm-reader-chat-bubble h1,
+      .llm-reader-chat-bubble h2,
+      .llm-reader-chat-bubble h3,
+      .llm-reader-chat-bubble h4,
+      .llm-reader-chat-bubble h5,
+      .llm-reader-chat-bubble h6 {
+        margin: 4px 0 2px 0;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+
+      .llm-reader-chat-bubble h1 {
+        font-size: 1.3em;
+      }
+
+      .llm-reader-chat-bubble h2 {
+        font-size: 1.2em;
+      }
+
+      .llm-reader-chat-bubble h3 {
+        font-size: 1.1em;
+      }
+
+      .llm-reader-chat-bubble h4 {
+        font-size: 1.05em;
+      }
+
+      .llm-reader-chat-bubble h5,
+      .llm-reader-chat-bubble h6 {
+        font-size: 1em;
       }
 
       .llm-reader-chat-bubble-user {
@@ -756,6 +789,27 @@ if (!window.__llm_reader_overlay_injected__) {
         } else {
           // 普通文本部分做简单 markdown 处理
           let text = escapeHtml(part);
+          
+          // 按行处理，更精确地控制标题和换行
+          const lines = text.split('\n');
+          const processedLines = [];
+          
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            // 检查是否是标题行
+            const titleMatch = line.match(/^\s*(#{1,6})\s+(.+?)\s*$/);
+            if (titleMatch) {
+              const level = titleMatch[1].length;
+              const content = titleMatch[2];
+              processedLines.push(`<h${level}>${content}</h${level}>`);
+            } else {
+              // 非标题行，保留原样（后续会处理换行）
+              processedLines.push(line);
+            }
+          }
+          
+          text = processedLines.join('\n');
+          
           // 粗体 **text**
           text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
           // 行内代码 `code`
@@ -770,7 +824,13 @@ if (!window.__llm_reader_overlay_injected__) {
             /(https?:\/\/[^\s]+)/g,
             '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
           );
-          // 换行
+          
+          // 换行处理：标题标签是块级元素，前后不需要 <br>
+          // 移除标题前后的换行符
+          text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
+          text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)/g, '$1');
+          text = text.replace(/(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
+          // 处理剩余的换行
           text = text.replace(/\n/g, "<br>");
           html += text;
         }
@@ -1223,7 +1283,7 @@ if (!window.__llm_reader_overlay_injected__) {
     }
 
     // 渲染聊天消息，支持滚动到指定问答对
-    function renderChatMessages(messagesToShow, scrollToQaIndex = -1) {
+    function renderChatMessages(messagesToShow, scrollToQaIndex = -1, preserveScroll = false) {
       chatList.innerHTML = "";
       
       // 记录需要滚动到的消息索引
@@ -1325,15 +1385,18 @@ if (!window.__llm_reader_overlay_injected__) {
           }, 100);
         }
       } else {
-        // 只有用户手动滚动到底部时才自动滚动
-        if (shouldAutoScroll) {
-          chatList.scrollTop = chatList.scrollHeight;
+        // 如果preserveScroll为true，不自动滚动，保持当前位置
+        if (!preserveScroll) {
+          // 只有用户手动滚动到底部时才自动滚动
+          if (shouldAutoScroll) {
+            chatList.scrollTop = chatList.scrollHeight;
+          }
         }
       }
     }
 
     // 更新导航按钮状态和显示
-    function updateNavigation() {
+    function updateNavigation(preserveScroll = false) {
       qaPairs = extractQaPairs(messages);
       const totalQas = qaPairs.length;
       
@@ -1344,7 +1407,7 @@ if (!window.__llm_reader_overlay_injected__) {
         navInfo.textContent = "";
         currentQaIndex = -1;
         // 显示所有消息
-        renderChatMessages(messages, -1);
+        renderChatMessages(messages, -1, preserveScroll);
         return;
       }
       
@@ -1360,8 +1423,22 @@ if (!window.__llm_reader_overlay_injected__) {
       // 更新信息显示
       navInfo.textContent = `${currentQaIndex + 1}/${totalQas}`;
       
+      // 如果preserveScroll为true，保存当前滚动位置并在渲染后恢复
+      let savedScrollTop = null;
+      if (preserveScroll) {
+        savedScrollTop = chatList.scrollTop;
+      }
+      
       // 始终显示所有消息，但高亮当前问答对
-      renderChatMessages(messages, currentQaIndex);
+      renderChatMessages(messages, preserveScroll ? -1 : currentQaIndex, preserveScroll);
+      
+      // 恢复滚动位置
+      if (preserveScroll && savedScrollTop !== null) {
+        // 使用requestAnimationFrame确保DOM已更新
+        requestAnimationFrame(() => {
+          chatList.scrollTop = savedScrollTop;
+        });
+      }
     }
 
     // 导航到上一个问答
@@ -1618,12 +1695,12 @@ ${bodyText}`,
           (full) => {
             messages.push({ role: "assistant", content: full });
             setStatus("解读完成，可以继续提问。");
-            // 自动跳转到最新的问答
+            // 更新问答对和导航，但保持用户当前位置不变
             qaPairs = extractQaPairs(messages);
             if (qaPairs.length > 0) {
               currentQaIndex = qaPairs.length - 1;
             }
-            updateNavigation(); // 更新导航状态
+            updateNavigation(true); // preserveScroll = true，保持滚动位置
           }
         );
       } catch (e) {
@@ -1675,12 +1752,12 @@ ${bodyText}`,
             // promptMessages 已经包含了用户消息，只需要添加助手回复
             messages = promptMessages.concat({ role: "assistant", content: full });
             setStatus("已回复，你可以继续提问。");
-            // 自动跳转到最新的问答
+            // 更新问答对和导航，但保持用户当前位置不变
             qaPairs = extractQaPairs(messages);
             if (qaPairs.length > 0) {
               currentQaIndex = qaPairs.length - 1;
             }
-            updateNavigation();
+            updateNavigation(true); // preserveScroll = true，保持滚动位置
           }
         );
       } catch (e) {
