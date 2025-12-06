@@ -65,7 +65,7 @@ if (!window.__llm_reader_overlay_injected__) {
         top: 50%;
         transform: translateY(-50%);
         z-index: 2147483647;
-        width: min(420px, 80vw);
+        width: min(450px, 80vw);
         height: 90vh;
         max-height: 90vh;
         background: #ffffff;
@@ -101,12 +101,24 @@ if (!window.__llm_reader_overlay_injected__) {
         display: flex;
         align-items: center;
         gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .llm-reader-actions-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
       }
 
       .llm-reader-profile-select {
         min-width: 120px;
         max-width: 200px;
-        padding: 3px 8px;
+        padding: 2px 6px;
         border-radius: 999px;
         border: 1px solid #dadce0;
         background: #ffffff;
@@ -118,7 +130,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-btn {
         border-radius: 999px;
-        padding: 4px 10px;
+        padding: 3px 8px;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #1f2933;
@@ -126,7 +138,7 @@ if (!window.__llm_reader_overlay_injected__) {
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 3px;
       }
 
       .llm-reader-btn:hover {
@@ -151,8 +163,8 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-font-size-controls {
         display: flex;
         align-items: center;
-        gap: 4px;
-        margin-left: 8px;
+        gap: 3px;
+        margin-left: 0;
       }
 
       .llm-reader-font-size-btn {
@@ -463,18 +475,18 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-navigation-controls {
         display: flex;
         align-items: center;
-        gap: 4px;
-        margin-left: 8px;
+        gap: 3px;
+        margin-left: 0;
       }
 
       .llm-reader-nav-btn {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #1f2933;
-        font-size: 12px;
+        font-size: 11px;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -597,11 +609,23 @@ if (!window.__llm_reader_overlay_injected__) {
     navigationControls.appendChild(navInfo);
     navigationControls.appendChild(nextBtn);
 
-    actions.appendChild(profileSelect);
-    actions.appendChild(analyzeBtn);
-    actions.appendChild(settingsBtn);
-    actions.appendChild(fontSizeControls);
-    actions.appendChild(navigationControls);
+    const mainActionsGroup = document.createElement("div");
+    mainActionsGroup.className = "llm-reader-actions-group";
+    mainActionsGroup.appendChild(profileSelect);
+    mainActionsGroup.appendChild(analyzeBtn);
+
+    const readingActionsGroup = document.createElement("div");
+    readingActionsGroup.className = "llm-reader-actions-group";
+    readingActionsGroup.appendChild(navigationControls);
+    readingActionsGroup.appendChild(fontSizeControls);
+
+    const utilityActionsGroup = document.createElement("div");
+    utilityActionsGroup.className = "llm-reader-actions-group";
+    utilityActionsGroup.appendChild(settingsBtn);
+
+    actions.appendChild(mainActionsGroup);
+    actions.appendChild(readingActionsGroup);
+    actions.appendChild(utilityActionsGroup);
     actions.appendChild(closeBtn);
     header.appendChild(title);
     header.appendChild(actions);
