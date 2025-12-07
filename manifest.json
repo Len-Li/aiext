@@ -3,6 +3,12 @@
   "name": "网页 LLM 解读助手",
   "description": "调用你的 LLM API 来解读当前网页内容，并支持在插件设置中修改 API Key 和模型。",
   "version": "1.0.0",
+  "icons": {
+    "16": "img/logo.png",
+    "32": "img/logo.png",
+    "48": "img/logo.png",
+    "128": "img/logo.png"
+  },
   "permissions": [
     "storage",
     "scripting",
@@ -13,7 +19,11 @@
   ],
   "action": {
     "default_title": "LLM 解读本页",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "img/logo.png",
+      "32": "img/logo.png"
+    }
   },
   "options_page": "options.html",
   "background": {

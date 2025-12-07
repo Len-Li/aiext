@@ -61,13 +61,13 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-panel {
         position: fixed;
-        right: 18px;
-        top: 50%;
-        transform: translateY(-50%);
+        right: 2%;
+        top: 1%;
+        transform: none;
         z-index: 2147483647;
-        width: min(520px, 80vw);
-        height: 666px;
-        max-height: 800px;
+        width: 33.33%;
+        height: 98vh;
+        max-height: 100vh;
         background: #ffffff;
         border-radius: 12px;
         border: 1px solid rgba(0, 0, 0, 0.08);
@@ -1105,7 +1105,7 @@ if (!window.__llm_reader_overlay_injected__) {
     // 面板缩放逻辑
     (function initResize() {
       const minWidth = 260;
-      const maxWidth = Math.min(window.innerWidth * 0.9, 600);
+      const maxWidth = Math.min(window.innerWidth * 0.9, 1000);
       const minHeight = 220;
       const maxHeight = 800;
 
@@ -1634,8 +1634,28 @@ if (!window.__llm_reader_overlay_injected__) {
       panel.style.display = panel.style.display === "none" ? "flex" : "none";
     });
 
-    closeBtn.addEventListener("click", () => {
+    function closePanel() {
       panel.style.display = "none";
+    }
+
+    closeBtn.addEventListener("click", closePanel);
+
+    // 添加双击聊天面板关闭功能
+    panel.addEventListener("dblclick", (e) => {
+      // 确保双击事件不是来自可交互元素，例如输入框、按钮、选择框等
+      if (
+        e.target === input ||
+        e.target === sendBtn ||
+        e.target === analyzeBtn ||
+        e.target === settingsBtn ||
+        e.target === profileSelect ||
+        e.target.closest(".llm-reader-input-row") ||
+        e.target.closest(".llm-reader-panel-actions") ||
+        e.target.closest(".llm-reader-chat-bubble")
+      ) {
+        return;
+      }
+      closePanel();
     });
 
     settingsBtn.addEventListener("click", () => {
