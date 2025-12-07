@@ -66,8 +66,8 @@ if (!window.__llm_reader_overlay_injected__) {
         transform: translateY(-50%);
         z-index: 2147483647;
         width: min(520px, 80vw);
-        height: 95vh;
-        max-height: 95vh;
+        height: 666px;
+        max-height: 800px;
         background: #ffffff;
         border-radius: 12px;
         border: 1px solid rgba(0, 0, 0, 0.08);
@@ -468,7 +468,8 @@ if (!window.__llm_reader_overlay_injected__) {
         left: 0;
         bottom: 0;
         width: 100%;
-        height: 4px;
+        height: 1px;
+        background: rgba(0, 0, 0, 0.1);
         cursor: ns-resize;
       }
 
@@ -1106,7 +1107,7 @@ if (!window.__llm_reader_overlay_injected__) {
       const minWidth = 260;
       const maxWidth = Math.min(window.innerWidth * 0.9, 600);
       const minHeight = 220;
-      const maxHeight = Math.min(window.innerHeight * 0.9, 760);
+      const maxHeight = 800;
 
       let startX = 0;
       let startY = 0;
