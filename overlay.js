@@ -65,9 +65,9 @@ if (!window.__llm_reader_overlay_injected__) {
         top: 50%;
         transform: translateY(-50%);
         z-index: 2147483647;
-        width: min(450px, 80vw);
-        height: 90vh;
-        max-height: 90vh;
+        width: min(460px, 80vw);
+        height: 95vh;
+        max-height: 95vh;
         background: #ffffff;
         border-radius: 12px;
         border: 1px solid rgba(0, 0, 0, 0.08);
