@@ -601,12 +601,7 @@ if (!window.__llm_reader_overlay_injected__) {
     nextBtn.title = "下一个问答";
     nextBtn.disabled = true;
 
-    const navInfo = document.createElement("span");
-    navInfo.className = "llm-reader-nav-info";
-    navInfo.textContent = "";
-
     navigationControls.appendChild(prevBtn);
-    navigationControls.appendChild(navInfo);
     navigationControls.appendChild(nextBtn);
 
     const mainActionsGroup = document.createElement("div");
@@ -711,7 +706,6 @@ if (!window.__llm_reader_overlay_injected__) {
     
     // 滚动控制相关变量
     let shouldAutoScroll = false; // 是否应该自动滚动（只有用户手动滚动到底部时才为true）
-    let lastScrollTop = 0;
 
     // 悬浮按钮拖动相关状态
     let isDraggingFloat = false;
@@ -939,9 +933,6 @@ if (!window.__llm_reader_overlay_injected__) {
       llmProfiles = profiles;
       activeLlmId = data.activeLlmId || profiles[0].id;
 
-      console.log("加载配置完成，配置数量:", llmProfiles.length, "激活ID:", activeLlmId);
-      console.log("配置列表:", llmProfiles);
-
       // 渲染下拉框
       profileSelect.innerHTML = "";
       llmProfiles.forEach((p) => {
@@ -951,18 +942,15 @@ if (!window.__llm_reader_overlay_injected__) {
         profileSelect.appendChild(opt);
       });
       profileSelect.value = activeLlmId;
-      console.log("下拉框渲染完成，选项数量:", profileSelect.options.length, "当前值:", profileSelect.value);
     }
 
     // 添加配置选择事件监听器
     profileSelect.addEventListener("change", async () => {
-      console.log("配置选择事件触发，选中的ID:", profileSelect.value);
       const selectedId = profileSelect.value;
       const selectedProfile = llmProfiles.find(p => p.id === selectedId);
       
       if (selectedProfile) {
         activeLlmId = selectedId;
-        console.log("切换到配置:", selectedProfile);
         // 保存到 Chrome storage
         await chrome.storage.sync.set({ activeLlmId: selectedId });
         // 显示用户反馈
@@ -973,11 +961,6 @@ if (!window.__llm_reader_overlay_injected__) {
         setStatus("选择的配置不存在", true);
         setTimeout(() => setStatus(""), 2000);
       }
-    });
-
-    // 添加点击事件监听器用于调试
-    profileSelect.addEventListener("click", () => {
-      console.log("配置下拉框被点击，当前选项数量:", profileSelect.options.length);
     });
 
     // 拖动整个面板位置（支持上下左右移动），在面板大部分区域拖动
@@ -1328,7 +1311,6 @@ if (!window.__llm_reader_overlay_injected__) {
       }
       
       // 渲染所有消息
-      let renderedItemIndex = 0;
       const COLLAPSE_THRESHOLD = 200; // 超过200字符时折叠
       
       for (let i = 0; i < messagesToShow.length; i++) {
@@ -1395,8 +1377,6 @@ if (!window.__llm_reader_overlay_injected__) {
         if (i === scrollToItemIndex) {
           item.setAttribute("data-scroll-target", "true");
         }
-        
-        renderedItemIndex++;
       }
       
       // 如果需要滚动到指定问答对
@@ -1428,7 +1408,6 @@ if (!window.__llm_reader_overlay_injected__) {
         // 没有问答对，禁用导航按钮
         prevBtn.disabled = true;
         nextBtn.disabled = true;
-        navInfo.textContent = "";
         currentQaIndex = -1;
         // 显示所有消息
         renderChatMessages(messages, -1, preserveScroll);
@@ -1443,9 +1422,6 @@ if (!window.__llm_reader_overlay_injected__) {
       // 更新按钮状态
       prevBtn.disabled = currentQaIndex <= 0;
       nextBtn.disabled = currentQaIndex >= totalQas - 1;
-      
-      // 更新信息显示
-      navInfo.textContent = `${currentQaIndex + 1}/${totalQas}`;
       
       // 如果preserveScroll为true，保存当前滚动位置并在渲染后恢复
       let savedScrollTop = null;
@@ -1538,7 +1514,6 @@ if (!window.__llm_reader_overlay_injected__) {
         shouldAutoScroll = false;
       }
       
-      lastScrollTop = currentScrollTop;
     });
 
     async function ensurePageData() {
