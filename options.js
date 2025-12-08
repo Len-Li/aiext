@@ -56,33 +56,15 @@ function renderProfileSelect() {
 
 async function restore() {
   try {
-    const data = await chrome.storage.sync.get([
-      "llmProfiles",
-      "activeLlmId",
-      "apiUrl",
-      "apiKey",
-      "model",
-    ]);
-
-    profiles = Array.isArray(data.llmProfiles) ? data.llmProfiles : [];
-    activeLlmId = data.activeLlmId || null;
-
-    // 兼容旧版本：只有单一 apiUrl/apiKey/model 时，自动迁移为一个默认配置
-    if (!profiles.length && (data.apiUrl || data.apiKey || data.model)) {
-      const legacy = {
-        id: "default",
-        name: "默认配置",
-        apiUrl: data.apiUrl || "",
-        apiKey: data.apiKey || "",
-        model: data.model || "",
-      };
-      profiles = [legacy];
-      activeLlmId = legacy.id;
-      await chrome.storage.sync.set({
-        llmProfiles: profiles,
-        activeLlmId,
-      });
+    const response = await chrome.runtime.sendMessage({ type: "GET_FULL_CONFIG" });
+    if (!response?.ok) {
+      throw new Error(response?.error || "获取配置失败");
     }
+    
+    let { profiles: configProfiles, activeLlmId: configActiveId } = response.config;
+    
+    profiles = configProfiles;
+    activeLlmId = configActiveId;
 
     if (!profiles.length) {
       // 没有任何配置时，创建一个空白配置

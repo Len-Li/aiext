@@ -43,6 +43,23 @@ function normalizeApiUrl(raw) {
 
 // 统一从 storage 中读取当前激活的 LLM 配置，支持多配置
 async function getConfig() {
+  const { profiles, activeLlmId } = await getFullConfig();
+  
+  const active = profiles.find((p) => p.id === activeLlmId) || profiles[0] || null;
+
+  if (!active) {
+    return { apiUrl: "", apiKey: "", model: "" };
+  }
+
+  return {
+    apiUrl: normalizeApiUrl(active.apiUrl),
+    apiKey: active.apiKey,
+    model: active.model,
+  };
+}
+
+// 统一的配置管理函数，返回完整的配置信息
+async function getFullConfig() {
   const data = await chrome.storage.sync.get([
     "llmProfiles",
     "activeLlmId",
@@ -69,17 +86,32 @@ async function getConfig() {
     });
   }
 
-  const active =
-    profiles.find((p) => p.id === data.activeLlmId) || profiles[0] || null;
-
-  if (!active) {
-    return { apiUrl: "", apiKey: "", model: "" };
+  // 没有任何配置时，创建一个占位配置，提醒用户去设置
+  if (!profiles.length) {
+    profiles = [
+      {
+        id: "empty",
+        name: "未配置，请前往设置",
+        apiUrl: "",
+        apiKey: "",
+        model: "",
+      },
+    ];
   }
 
   return {
-    apiUrl: normalizeApiUrl(active.apiUrl),
-    apiKey: active.apiKey,
-    model: active.model,
+    profiles,
+    activeLlmId: data.activeLlmId || profiles[0]?.id || null
+  };
+}
+
+// 通用的状态设置函数
+function createStatusSetter(statusElement) {
+  return function(text, isError = false) {
+    if (statusElement) {
+      statusElement.textContent = text || "";
+      statusElement.style.color = isError ? "#f97373" : "#9ca3af";
+    }
   };
 }
 
@@ -230,6 +262,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.runtime.openOptionsPage();
     }
     // 不需要异步响应
+  }
+
+  if (message?.type === "NORMALIZE_API_URL") {
+    sendResponse({ url: normalizeApiUrl(message.url) });
+  }
+
+  if (message?.type === "GET_FULL_CONFIG") {
+    (async () => {
+      try {
+        const config = await getFullConfig();
+        sendResponse({ ok: true, config });
+      } catch (err) {
+        sendResponse({ ok: false, error: err?.message || String(err) });
+      }
+    })();
+    return true; // 异步响应
   }
 });
 

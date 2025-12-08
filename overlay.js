@@ -858,91 +858,45 @@ if (!window.__llm_reader_overlay_injected__) {
       return html;
     }
 
-    function normalizeApiUrl(raw) {
-      if (!raw) return "";
-      let url = String(raw).trim();
-      url = url.replace(/\/+$/, "");
-
+    // 通过消息传递获取标准化的 API URL，避免重复代码
+    async function normalizeApiUrl(raw) {
       try {
-        const u = new URL(url);
-        const base = u.origin;
-        let path = u.pathname || "";
-        path = path.replace(/\/+$/, "");
-
-        if (!path || path === "/") {
-          return base + "/v1/chat/completions";
-        }
-        if (path === "/v1") {
-          return base + "/v1/chat/completions";
-        }
-        if (path === "/v1/chat" || path === "/v1/chat/") {
-          return base + "/v1/chat/completions";
-        }
-        if (path === "/v1/completions") {
-          return base + "/v1/chat/completions";
-        }
-        if (path.startsWith("/v1/chat/completions")) {
-          return base + path;
-        }
-
-        return base + path;
-      } catch {
-        return url;
+        const response = await chrome.runtime.sendMessage({
+          type: "NORMALIZE_API_URL",
+          url: raw
+        });
+        return response?.url || raw;
+      } catch (e) {
+        console.error("获取标准化 API URL 失败:", e);
+        return raw;
       }
     }
 
     async function loadProfiles() {
-      const data = await chrome.storage.sync.get([
-        "llmProfiles",
-        "activeLlmId",
-        "apiUrl",
-        "apiKey",
-        "model",
-      ]);
+      try {
+        const response = await chrome.runtime.sendMessage({ type: "GET_FULL_CONFIG" });
+        if (!response?.ok) {
+          throw new Error(response?.error || "获取配置失败");
+        }
+        
+        const { profiles, activeLlmId: configActiveId } = response.config;
+        
+        llmProfiles = profiles;
+        activeLlmId = configActiveId;
 
-      let profiles = Array.isArray(data.llmProfiles) ? data.llmProfiles : [];
-
-      // 兼容旧版本：自动从单一配置迁移
-      if (!profiles.length && (data.apiUrl || data.apiKey || data.model)) {
-        const legacyProfile = {
-          id: "default",
-          name: "默认配置",
-          apiUrl: data.apiUrl || "",
-          apiKey: data.apiKey || "",
-          model: data.model || "",
-        };
-        profiles = [legacyProfile];
-        await chrome.storage.sync.set({
-          llmProfiles: profiles,
-          activeLlmId: legacyProfile.id,
+        // 渲染下拉框
+        profileSelect.innerHTML = "";
+        llmProfiles.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name || "(未命名配置)";
+          profileSelect.appendChild(opt);
         });
+        profileSelect.value = activeLlmId;
+      } catch (e) {
+        console.error("加载配置失败:", e);
+        setStatus("加载配置失败：" + (e?.message || String(e)), true);
       }
-
-      // 没有任何配置时，创建一个占位配置，提醒用户去设置
-      if (!profiles.length) {
-        profiles = [
-          {
-            id: "empty",
-            name: "未配置，请前往设置",
-            apiUrl: "",
-            apiKey: "",
-            model: "",
-          },
-        ];
-      }
-
-      llmProfiles = profiles;
-      activeLlmId = data.activeLlmId || profiles[0].id;
-
-      // 渲染下拉框
-      profileSelect.innerHTML = "";
-      llmProfiles.forEach((p) => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = p.name || "(未命名配置)";
-        profileSelect.appendChild(opt);
-      });
-      profileSelect.value = activeLlmId;
     }
 
     // 添加配置选择事件监听器
@@ -1548,7 +1502,7 @@ if (!window.__llm_reader_overlay_injected__) {
         await loadProfiles();
       }
       const { apiUrl, apiKey, model } = getActiveProfile();
-      const endpoint = normalizeApiUrl(apiUrl);
+      const endpoint = await normalizeApiUrl(apiUrl);
       if (!apiUrl || !apiKey || !model) {
         throw new Error("尚未配置 API 地址 / API Key / 模型。");
       }
@@ -1649,9 +1603,15 @@ if (!window.__llm_reader_overlay_injected__) {
         e.target === analyzeBtn ||
         e.target === settingsBtn ||
         e.target === profileSelect ||
+        e.target === closeBtn ||
         e.target.closest(".llm-reader-input-row") ||
         e.target.closest(".llm-reader-panel-actions") ||
-        e.target.closest(".llm-reader-chat-bubble")
+        e.target.closest(".llm-reader-font-size-controls") ||
+        e.target.closest(".llm-reader-navigation-controls") ||
+        e.target.closest(".llm-reader-chat-expand-btn") ||
+        e.target.closest(".llm-reader-resize-handle") ||
+        e.target.closest(".llm-reader-resize-corner") ||
+        e.target.closest(".llm-reader-resize-edge")
       ) {
         return;
       }
@@ -1744,11 +1704,9 @@ ${bodyText}`,
         return;
       }
 
-      isStreaming = true;
-      sendBtn.disabled = true;
-      analyzeBtn.disabled = true;
-      input.disabled = true;
-
+      // 设置流式状态
+      setStreamingState(true);
+      
       // 添加用户消息到 messages
       const userMsg = { role: "user", content: text };
       messages = messages.concat(userMsg);
@@ -1769,25 +1727,35 @@ ${bodyText}`,
             smartScrollToBottom();
           },
           (full) => {
-            // promptMessages 已经包含了用户消息，只需要添加助手回复
-            messages = promptMessages.concat({ role: "assistant", content: full });
-            setStatus("已回复，你可以继续提问。");
-            // 更新问答对和导航，但保持用户当前位置不变
-            qaPairs = extractQaPairs(messages);
-            if (qaPairs.length > 0) {
-              currentQaIndex = qaPairs.length - 1;
-            }
-            updateNavigation(true); // preserveScroll = true，保持滚动位置
+            // 添加助手回复并更新导航
+            addAssistantResponseAndUpdateNavigation(full);
           }
         );
       } catch (e) {
         setStatus("调用失败：" + (e?.message || String(e)), true);
       } finally {
-        isStreaming = false;
-        sendBtn.disabled = false;
-        analyzeBtn.disabled = false;
-        input.disabled = false;
+        setStreamingState(false);
       }
+    }
+
+    // 统一的流式状态设置函数
+    function setStreamingState(streaming) {
+      isStreaming = streaming;
+      sendBtn.disabled = streaming;
+      analyzeBtn.disabled = streaming;
+      input.disabled = streaming;
+    }
+
+    // 统一的助手回复处理函数
+    function addAssistantResponseAndUpdateNavigation(full) {
+      messages = messages.concat({ role: "assistant", content: full });
+      setStatus("已回复，你可以继续提问。");
+      // 更新问答对和导航，但保持用户当前位置不变
+      qaPairs = extractQaPairs(messages);
+      if (qaPairs.length > 0) {
+        currentQaIndex = qaPairs.length - 1;
+      }
+      updateNavigation(true); // preserveScroll = true，保持滚动位置
     }
 
     sendBtn.addEventListener("click", () => {

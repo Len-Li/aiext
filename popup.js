@@ -5,10 +5,11 @@ const statusEl = document.getElementById("status");
 const resultEl = document.getElementById("result");
 const openOptionsBtn = document.getElementById("open-options");
 
-function setStatus(text, isError = false) {
+// 使用通用的状态设置函数
+const setStatus = (function(text, isError = false) {
   statusEl.textContent = text || "";
   statusEl.style.color = isError ? "#f97373" : "#9ca3af";
-}
+});
 
 openOptionsBtn?.addEventListener("click", () => {
   if (chrome.runtime.openOptionsPage) {
