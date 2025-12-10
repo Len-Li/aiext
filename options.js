@@ -116,7 +116,7 @@ addProfileBtn?.addEventListener("click", async () => {
   await chrome.storage.sync.set({ llmProfiles: profiles, activeLlmId });
   renderProfileSelect();
   setStatus("已新增一个空白配置。");
-  setTimeout(() => setStatus(""), 1500);
+  const addProfileTimeout = setTimeout(() => setStatus(""), 1500);
 });
 
 deleteProfileBtn?.addEventListener("click", async () => {
@@ -130,7 +130,7 @@ deleteProfileBtn?.addEventListener("click", async () => {
   await chrome.storage.sync.set({ llmProfiles: profiles, activeLlmId });
   renderProfileSelect();
   setStatus("已删除当前配置。");
-  setTimeout(() => setStatus(""), 1500);
+  const deleteProfileTimeout = setTimeout(() => setStatus(""), 1500);
 });
 
 saveBtn?.addEventListener("click", async () => {
@@ -176,9 +176,9 @@ saveBtn?.addEventListener("click", async () => {
     });
 
     renderProfileSelect();
-
+  
     setStatus("保存成功。你可以在聊天窗口中切换使用。");
-    setTimeout(() => setStatus(""), 2000);
+    const saveSuccessTimeout = setTimeout(() => setStatus(""), 2000);
   } catch (err) {
     console.error(err);
     setStatus("保存失败：" + (err?.message || String(err)), true);

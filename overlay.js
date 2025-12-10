@@ -761,7 +761,7 @@ if (!window.__llm_reader_overlay_injected__) {
       
       // 显示状态提示
       setStatus(`文字大小: ${currentFontSize}px`);
-      setTimeout(() => setStatus(""), 1500);
+      const fontSizeTimeout = setTimeout(() => setStatus(""), 1500);
     }
 
     async function loadFontSize() {
@@ -954,8 +954,8 @@ if (!window.__llm_reader_overlay_injected__) {
           panel.style.right = "auto";
         }
 
-        document.addEventListener("mousemove", onDragMove);
-        document.addEventListener("mouseup", onDragEnd);
+        document.addEventListener("mousemove", onDragMove, { passive: false });
+        document.addEventListener("mouseup", onDragEnd, { passive: false });
       });
 
       function onDragMove(e) {
@@ -986,8 +986,8 @@ if (!window.__llm_reader_overlay_injected__) {
       function onDragEnd() {
         if (!isDragging) return;
         isDragging = false;
-        document.removeEventListener("mousemove", onDragMove);
-        document.removeEventListener("mouseup", onDragEnd);
+        document.removeEventListener("mousemove", onDragMove, { passive: false });
+        document.removeEventListener("mouseup", onDragEnd, { passive: false });
       }
     })();
 
@@ -1030,8 +1030,8 @@ if (!window.__llm_reader_overlay_injected__) {
       function onFloatUp() {
         if (!isDraggingFloat) return;
         isDraggingFloat = false;
-        document.removeEventListener("mousemove", onFloatMove);
-        document.removeEventListener("mouseup", onFloatUp);
+        document.removeEventListener("mousemove", onFloatMove, { passive: false });
+        document.removeEventListener("mouseup", onFloatUp, { passive: false });
       }
 
       floatBtn.addEventListener("mousedown", (e) => {
@@ -1048,8 +1048,8 @@ if (!window.__llm_reader_overlay_injected__) {
         floatOffsetX = e.clientX - rect.left;
         floatOffsetY = e.clientY - rect.top;
 
-        document.addEventListener("mousemove", onFloatMove);
-        document.addEventListener("mouseup", onFloatUp);
+        document.addEventListener("mousemove", onFloatMove, { passive: false });
+        document.addEventListener("mouseup", onFloatUp, { passive: false });
       });
     })();
 
@@ -1149,8 +1149,8 @@ if (!window.__llm_reader_overlay_injected__) {
       function onMouseUp() {
         if (!isResizing) return;
         isResizing = false;
-        document.removeEventListener("mousemove", onMouseMove);
-        document.removeEventListener("mouseup", onMouseUp);
+        document.removeEventListener("mousemove", onMouseMove, { passive: false });
+        document.removeEventListener("mouseup", onMouseUp, { passive: false });
       }
 
       function startResize(e, mode) {
@@ -1175,8 +1175,8 @@ if (!window.__llm_reader_overlay_injected__) {
         startTop = parseFloat(panel.style.top || rect.top);
         startLeft = parseFloat(panel.style.left || rect.left);
 
-        document.addEventListener("mousemove", onMouseMove);
-        document.addEventListener("mouseup", onMouseUp);
+        document.addEventListener("mousemove", onMouseMove, { passive: false });
+        document.addEventListener("mouseup", onMouseUp, { passive: false });
       }
 
       resizeCornerBR.addEventListener("mousedown", (e) => {
@@ -1338,10 +1338,10 @@ if (!window.__llm_reader_overlay_injected__) {
       if (scrollToQaIndex >= 0) {
         const scrollTarget = chatList.querySelector('[data-scroll-target="true"]');
         if (scrollTarget) {
-          setTimeout(() => {
+          requestAnimationFrame(() => {
             scrollTarget.scrollIntoView({ behavior: "smooth", block: "center" });
             scrollTarget.removeAttribute("data-scroll-target");
-          }, 100);
+          });
         }
       } else {
         // 如果preserveScroll为true，不自动滚动，保持当前位置
@@ -1390,7 +1390,7 @@ if (!window.__llm_reader_overlay_injected__) {
       // 恢复滚动位置
       if (preserveScroll && savedScrollTop !== null) {
         // 使用requestAnimationFrame确保DOM已更新
-        requestAnimationFrame(() => {
+        const restoreScrollFrame = requestAnimationFrame(() => {
           chatList.scrollTop = savedScrollTop;
         });
       }
