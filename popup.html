@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>LLM 网页解读助手</title>
+    <title data-i18n="popupTitle">LLM 网页解读助手</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
@@ -23,17 +23,17 @@
         <img src="" alt="Logo" id="logo">
       </div>
       <header>
-        <h1>LLM 解读助手</h1>
-        <button id="open-options">设置</button>
+        <h1 data-i18n="appTitle"></h1>
+        <button id="open-options" class="icon-btn" title="设置" data-i18n-title="btn_open_options">⚙️</button>
       </header>
       <main>
-        <button id="analyze-btn">解读当前网页</button>
+        <button id="analyze-btn" data-i18n="btn_analyze">解读当前网页</button>
         <div id="status"></div>
-        <textarea id="result" readonly placeholder="解读结果将在这里显示"></textarea>
+        <textarea id="result" readonly data-i18n-placeholder="placeholder_result" placeholder="解读结果将在这里显示"></textarea>
       </main>
     </div>
     <script src="popup.js" type="module"></script>
   </body>
-  </html>
+</html>
 
 

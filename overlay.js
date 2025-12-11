@@ -5,6 +5,22 @@ if (!window.__llm_reader_overlay_injected__) {
   window.__llm_reader_overlay_injected__ = true;
 
   const STYLE_ID = "__llm_reader_overlay_style__";
+  
+  // 多语言辅助函数
+  const t = window.__llm_reader_t__ || ((key) => key);
+  let currentLang = "zh-CN";
+  
+  // 获取当前语言设置
+  async function loadLanguage() {
+    try {
+      const data = await chrome.storage.sync.get("language");
+      currentLang = data.language || "zh-CN";
+    } catch (e) {
+      console.error("加载语言设置失败:", e);
+      currentLang = "zh-CN";
+    }
+    return currentLang;
+  }
 
   function injectStyle() {
     if (document.getElementById(STYLE_ID)) return;
@@ -144,6 +160,22 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-btn:hover {
         background: #f6f9fe;
         border-color: #1a73e8;
+      }
+
+      .llm-reader-settings-btn {
+        background: transparent;
+        border: none;
+        padding: 4px;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      .llm-reader-settings-btn:hover {
+        opacity: 1;
+        transform: rotate(30deg);
       }
 
       .llm-reader-close {
@@ -343,7 +375,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-input-row {
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         gap: 6px;
         margin-top: 4px;
       }
@@ -518,6 +550,241 @@ if (!window.__llm_reader_overlay_injected__) {
         margin: 0 4px;
         white-space: nowrap;
       }
+
+      /* Settings Panel Styles */
+      .llm-reader-settings-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+      }
+
+      .llm-reader-settings-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .llm-reader-settings-panel {
+        width: 420px;
+        max-width: 90vw;
+        max-height: 85vh;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow:
+          0 3px 5px -1px rgba(0, 0, 0, 0.2),
+          0 6px 10px 0 rgba(0, 0, 0, 0.14),
+          0 1px 18px 0 rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        color: #202124;
+        font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        transform: scale(0.95);
+        transition: transform 0.2s ease;
+      }
+
+      .llm-reader-settings-overlay.visible .llm-reader-settings-panel {
+        transform: scale(1);
+      }
+
+      .llm-reader-settings-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        background: #f8f9fa;
+      }
+
+      .llm-reader-settings-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .llm-reader-settings-close {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #5f6368;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: background 0.15s ease;
+      }
+
+      .llm-reader-settings-close:hover {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      .llm-reader-settings-body {
+        padding: 16px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .llm-reader-settings-section {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .llm-reader-settings-section-title {
+        font-size: 12px;
+        font-weight: 500;
+        color: #5f6368;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .llm-reader-settings-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .llm-reader-settings-label {
+        font-size: 12px;
+        color: #5f6368;
+      }
+
+      .llm-reader-settings-input,
+      .llm-reader-settings-select {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #202124;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .llm-reader-settings-input:focus,
+      .llm-reader-settings-select:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+      }
+
+      .llm-reader-settings-input::placeholder {
+        color: #9aa0a6;
+      }
+
+      .llm-reader-settings-profile-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .llm-reader-settings-profile-select {
+        flex: 1;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #202124;
+        font-size: 13px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .llm-reader-settings-btn-small {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #202124;
+        font-size: 12px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .llm-reader-settings-btn-small:hover {
+        background: #f6f9fe;
+        border-color: #1a73e8;
+      }
+
+      .llm-reader-settings-btn-small.danger {
+        color: #d93025;
+        border-color: #d93025;
+      }
+
+      .llm-reader-settings-btn-small.danger:hover {
+        background: #fce8e6;
+      }
+
+      .llm-reader-settings-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 12px 16px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        background: #f8f9fa;
+      }
+
+      .llm-reader-settings-btn-primary {
+        padding: 8px 20px;
+        border-radius: 6px;
+        border: none;
+        background: #1a73e8;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .llm-reader-settings-btn-primary:hover {
+        background: #1557b0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .llm-reader-settings-btn-secondary {
+        padding: 8px 20px;
+        border-radius: 6px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #5f6368;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+
+      .llm-reader-settings-btn-secondary:hover {
+        background: #f1f3f4;
+      }
+
+      .llm-reader-settings-status {
+        font-size: 12px;
+        color: #5f6368;
+        min-height: 18px;
+        text-align: center;
+      }
+
+      .llm-reader-settings-status.error {
+        color: #d93025;
+      }
+
+      .llm-reader-settings-status.success {
+        color: #1e8e3e;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -559,11 +826,12 @@ if (!window.__llm_reader_overlay_injected__) {
 
     const analyzeBtn = document.createElement("button");
     analyzeBtn.className = "llm-reader-btn";
-    analyzeBtn.textContent = "解读本页";
+    analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
 
     const settingsBtn = document.createElement("button");
-    settingsBtn.className = "llm-reader-btn";
-    settingsBtn.textContent = "设置";
+    settingsBtn.className = "llm-reader-settings-btn";
+    settingsBtn.textContent = "⚙️";
+    settingsBtn.title = t("overlay_settings_btn", currentLang);
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "llm-reader-close";
@@ -576,12 +844,12 @@ if (!window.__llm_reader_overlay_injected__) {
     const decreaseFontSizeBtn = document.createElement("button");
     decreaseFontSizeBtn.className = "llm-reader-font-size-btn";
     decreaseFontSizeBtn.textContent = "−";
-    decreaseFontSizeBtn.title = "减小文字大小";
+    decreaseFontSizeBtn.title = t("overlay_decrease_font", currentLang);
 
     const increaseFontSizeBtn = document.createElement("button");
     increaseFontSizeBtn.className = "llm-reader-font-size-btn";
     increaseFontSizeBtn.textContent = "+";
-    increaseFontSizeBtn.title = "增大文字大小";
+    increaseFontSizeBtn.title = t("overlay_increase_font", currentLang);
 
     fontSizeControls.appendChild(decreaseFontSizeBtn);
     fontSizeControls.appendChild(increaseFontSizeBtn);
@@ -593,13 +861,13 @@ if (!window.__llm_reader_overlay_injected__) {
     const prevBtn = document.createElement("button");
     prevBtn.className = "llm-reader-nav-btn";
     prevBtn.textContent = "↑";
-    prevBtn.title = "上一个问答";
+    prevBtn.title = t("overlay_prev_qa", currentLang);
     prevBtn.disabled = true;
 
     const nextBtn = document.createElement("button");
     nextBtn.className = "llm-reader-nav-btn";
     nextBtn.textContent = "↓";
-    nextBtn.title = "下一个问答";
+    nextBtn.title = t("overlay_next_qa", currentLang);
     nextBtn.disabled = true;
 
     navigationControls.appendChild(prevBtn);
@@ -642,11 +910,11 @@ if (!window.__llm_reader_overlay_injected__) {
     const input = document.createElement("textarea");
     input.className = "llm-reader-input";
     input.rows = 1;
-    input.placeholder = "继续就当前网页提问，回车发送…";
+    input.placeholder = t("overlay_input_placeholder", currentLang);
 
     const sendBtn = document.createElement("button");
     sendBtn.className = "llm-reader-send-btn";
-    sendBtn.textContent = "发送";
+    sendBtn.textContent = t("overlay_send_btn", currentLang);
 
     const resizeCornerBR = document.createElement("div");
     resizeCornerBR.className = "llm-reader-resize-handle";
@@ -760,7 +1028,7 @@ if (!window.__llm_reader_overlay_injected__) {
       chrome.storage.sync.set({ fontSize: currentFontSize });
       
       // 显示状态提示
-      setStatus(`文字大小: ${currentFontSize}px`);
+      setStatus(`${t("overlay_font_size", currentLang)}: ${currentFontSize}px`);
       const fontSizeTimeout = setTimeout(() => setStatus(""), 1500);
     }
 
@@ -876,7 +1144,7 @@ if (!window.__llm_reader_overlay_injected__) {
       try {
         const response = await chrome.runtime.sendMessage({ type: "GET_FULL_CONFIG" });
         if (!response?.ok) {
-          throw new Error(response?.error || "获取配置失败");
+          throw new Error(response?.error || t("overlay_load_config_fail", currentLang));
         }
         
         const { profiles, activeLlmId: configActiveId } = response.config;
@@ -895,7 +1163,7 @@ if (!window.__llm_reader_overlay_injected__) {
         profileSelect.value = activeLlmId;
       } catch (e) {
         console.error("加载配置失败:", e);
-        setStatus("加载配置失败：" + (e?.message || String(e)), true);
+        setStatus(t("overlay_load_config_fail", currentLang) + (e?.message || String(e)), true);
       }
     }
 
@@ -909,11 +1177,11 @@ if (!window.__llm_reader_overlay_injected__) {
         // 保存到 Chrome storage
         await chrome.storage.sync.set({ activeLlmId: selectedId });
         // 显示用户反馈
-        setStatus(`已切换到配置：${selectedProfile.name || '未命名配置'}`);
+        setStatus(t("overlay_switched_profile", currentLang) + (selectedProfile.name || '未命名配置'));
         setTimeout(() => setStatus(""), 2000);
       } else {
         console.error("选择的配置不存在:", selectedId);
-        setStatus("选择的配置不存在", true);
+        setStatus(t("overlay_profile_not_found", currentLang), true);
         setTimeout(() => setStatus(""), 2000);
       }
     });
@@ -1302,19 +1570,19 @@ if (!window.__llm_reader_overlay_injected__) {
           
           const expandBtn = document.createElement("button");
           expandBtn.className = "llm-reader-chat-expand-btn";
-          expandBtn.textContent = "展开";
-          expandBtn.setAttribute("aria-label", "展开完整内容");
+          expandBtn.textContent = t("overlay_expand", currentLang);
+          expandBtn.setAttribute("aria-label", t("overlay_expand", currentLang));
           
           expandBtn.addEventListener("click", () => {
             const isCollapsed = bubble.getAttribute("data-collapsed") === "true";
             if (isCollapsed) {
               bubble.classList.remove("llm-reader-chat-bubble-collapsed");
               bubble.setAttribute("data-collapsed", "false");
-              expandBtn.textContent = "收起";
+              expandBtn.textContent = t("overlay_collapse", currentLang);
             } else {
               bubble.classList.add("llm-reader-chat-bubble-collapsed");
               bubble.setAttribute("data-collapsed", "true");
-              expandBtn.textContent = "展开";
+              expandBtn.textContent = t("overlay_expand", currentLang);
             }
           });
           
@@ -1473,17 +1741,17 @@ if (!window.__llm_reader_overlay_injected__) {
 
     async function ensurePageData() {
       if (pageDataCache) return pageDataCache;
-      setStatus("正在读取页面内容…");
+      setStatus(t("overlay_reading_page", currentLang));
       try {
         const res = await chrome.runtime.sendMessage({ type: "GET_PAGE_DATA" });
         if (!res?.ok) {
-          throw new Error(res?.error || "获取页面内容失败。");
+          throw new Error(res?.error || t("overlay_read_fail", currentLang));
         }
         pageDataCache = res.pageData;
         setStatus("");
         return pageDataCache;
       } catch (e) {
-        setStatus("读取页面内容失败：" + (e?.message || String(e)), true);
+        setStatus(t("overlay_read_fail", currentLang) + (e?.message || String(e)), true);
         throw e;
       }
     }
@@ -1492,7 +1760,7 @@ if (!window.__llm_reader_overlay_injected__) {
       const found =
         llmProfiles.find((p) => p.id === activeLlmId) || llmProfiles[0] || null;
       if (!found) {
-        throw new Error("尚未配置任何 LLM 接口，请先前往设置里添加。");
+        throw new Error(t("overlay_no_config", currentLang));
       }
       return found;
     }
@@ -1504,7 +1772,7 @@ if (!window.__llm_reader_overlay_injected__) {
       const { apiUrl, apiKey, model } = getActiveProfile();
       const endpoint = await normalizeApiUrl(apiUrl);
       if (!apiUrl || !apiKey || !model) {
-        throw new Error("尚未配置 API 地址 / API Key / 模型。");
+        throw new Error(t("overlay_no_api_config", currentLang));
       }
 
       const body = {
@@ -1619,11 +1887,7 @@ if (!window.__llm_reader_overlay_injected__) {
     });
 
     settingsBtn.addEventListener("click", () => {
-      try {
-        chrome.runtime.sendMessage({ type: "OPEN_OPTIONS" });
-      } catch (e) {
-        console.error("打开设置页失败:", e);
-      }
+      openSettingsPanel();
     });
 
     analyzeBtn.addEventListener("click", async () => {
@@ -1638,33 +1902,29 @@ if (!window.__llm_reader_overlay_injected__) {
 
       try {
         const pageData = await ensurePageData();
-        const titleText = pageData.title || "（无标题）";
-        const urlText = pageData.url || "（无链接）";
-        const bodyText = pageData.text || "（无正文内容）";
+        const titleText = pageData.title || t("prompt_no_title", currentLang);
+        const urlText = pageData.url || t("prompt_no_link", currentLang);
+        const bodyText = pageData.text || t("prompt_no_content", currentLang);
 
         const systemMsg = {
           role: "system",
-          content:
-            "你是一个帮助用户用简体中文解释网页内容的助手，需要用通俗、分点的方式总结重点。",
+          content: t("prompt_system", currentLang),
         };
         const userMsg = {
           role: "user",
-          content: `请你阅读下面网页内容，并完成：
-1）用条列的方式概括核心观点与结构
-2）指出重要细节与结论
-3）最后给一个三行以内的简洁总结
+          content: `${t("prompt_user_intro", currentLang)}
 
-网页标题：${titleText}
-网页链接：${urlText}
+${t("prompt_page_title", currentLang)}${titleText}
+${t("prompt_page_link", currentLang)}${urlText}
 
-正文内容如下：
+${t("prompt_content_start", currentLang)}
 ${bodyText}`,
         };
 
         messages = [systemMsg, userMsg];
-        appendChatItem("user", "请帮我解读当前网页内容。");
+        appendChatItem("user", t("overlay_ask_analyze", currentLang));
         const assistantBubble = appendChatItem("assistant", "");
-        setStatus("正在解读当前网页，请稍候…");
+        setStatus(t("overlay_analyzing", currentLang));
 
         await streamChat(
           messages,
@@ -1674,7 +1934,7 @@ ${bodyText}`,
           },
           (full) => {
             messages.push({ role: "assistant", content: full });
-            setStatus("解读完成，可以继续提问。");
+            setStatus(t("overlay_analyze_done", currentLang));
             // 更新问答对和导航，但保持用户当前位置不变
             qaPairs = extractQaPairs(messages);
             if (qaPairs.length > 0) {
@@ -1684,7 +1944,7 @@ ${bodyText}`,
           }
         );
       } catch (e) {
-        setStatus("调用失败：" + (e?.message || String(e)), true);
+        setStatus(t("overlay_call_fail", currentLang) + (e?.message || String(e)), true);
       } finally {
         isStreaming = false;
         analyzeBtn.disabled = false;
@@ -1715,7 +1975,7 @@ ${bodyText}`,
       appendChatItem("user", text);
       input.value = "";
       const assistantBubble = appendChatItem("assistant", "");
-      setStatus("正在思考，请稍候…");
+      setStatus(t("overlay_thinking", currentLang));
 
       const promptMessages = messages;
 
@@ -1732,7 +1992,7 @@ ${bodyText}`,
           }
         );
       } catch (e) {
-        setStatus("调用失败：" + (e?.message || String(e)), true);
+        setStatus(t("overlay_call_fail", currentLang) + (e?.message || String(e)), true);
       } finally {
         setStreamingState(false);
       }
@@ -1749,7 +2009,7 @@ ${bodyText}`,
     // 统一的助手回复处理函数
     function addAssistantResponseAndUpdateNavigation(full) {
       messages = messages.concat({ role: "assistant", content: full });
-      setStatus("已回复，你可以继续提问。");
+      setStatus(t("overlay_replied", currentLang));
       // 更新问答对和导航，但保持用户当前位置不变
       qaPairs = extractQaPairs(messages);
       if (qaPairs.length > 0) {
@@ -1778,9 +2038,473 @@ ${bodyText}`,
       updateFontSize(currentFontSize + FONT_SIZE_STEP);
     });
 
-    // 初始化时加载配置
-    loadProfiles();
-    loadFontSize();
+    // 更新所有 UI 文本（用于语言切换后刷新）
+    function updateUITexts() {
+      analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
+      settingsBtn.title = t("overlay_settings_btn", currentLang);
+      sendBtn.textContent = t("overlay_send_btn", currentLang);
+      input.placeholder = t("overlay_input_placeholder", currentLang);
+      decreaseFontSizeBtn.title = t("overlay_decrease_font", currentLang);
+      increaseFontSizeBtn.title = t("overlay_increase_font", currentLang);
+      prevBtn.title = t("overlay_prev_qa", currentLang);
+      nextBtn.title = t("overlay_next_qa", currentLang);
+    }
+
+    // ========== 设置面板相关 ==========
+    let settingsOverlay = null;
+    let settingsProfiles = [];
+    let settingsActiveId = null;
+
+    function createSettingsPanel() {
+      // 创建遮罩层
+      const overlay = document.createElement("div");
+      overlay.className = "llm-reader-settings-overlay";
+
+      // 创建设置面板
+      const panel = document.createElement("div");
+      panel.className = "llm-reader-settings-panel";
+
+      // 头部
+      const header = document.createElement("div");
+      header.className = "llm-reader-settings-header";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "llm-reader-settings-title";
+      titleEl.textContent = t("settings_title", currentLang);
+
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "llm-reader-settings-close";
+      closeBtn.textContent = "×";
+      closeBtn.addEventListener("click", closeSettingsPanel);
+
+      header.appendChild(titleEl);
+      header.appendChild(closeBtn);
+
+      // 主体
+      const body = document.createElement("div");
+      body.className = "llm-reader-settings-body";
+
+      // 语言设置区域
+      const langSection = document.createElement("div");
+      langSection.className = "llm-reader-settings-section";
+
+      const langTitle = document.createElement("div");
+      langTitle.className = "llm-reader-settings-section-title";
+      langTitle.textContent = t("settings_language", currentLang);
+
+      const langField = document.createElement("div");
+      langField.className = "llm-reader-settings-field";
+
+      const langSelect = document.createElement("select");
+      langSelect.className = "llm-reader-settings-select";
+      langSelect.id = "settings-language-select";
+      langSelect.innerHTML = `
+        <option value="zh-CN">简体中文</option>
+        <option value="en-US">English</option>
+      `;
+      langSelect.value = currentLang;
+
+      langField.appendChild(langSelect);
+      langSection.appendChild(langTitle);
+      langSection.appendChild(langField);
+
+      // LLM 配置区域
+      const llmSection = document.createElement("div");
+      llmSection.className = "llm-reader-settings-section";
+
+      const llmTitle = document.createElement("div");
+      llmTitle.className = "llm-reader-settings-section-title";
+      llmTitle.textContent = t("settings_llm_config", currentLang);
+
+      // 配置选择行
+      const profileRow = document.createElement("div");
+      profileRow.className = "llm-reader-settings-profile-row";
+
+      const profileSelect = document.createElement("select");
+      profileSelect.className = "llm-reader-settings-profile-select";
+      profileSelect.id = "settings-profile-select";
+
+      const addBtn = document.createElement("button");
+      addBtn.className = "llm-reader-settings-btn-small";
+      addBtn.textContent = t("settings_add_profile", currentLang);
+      addBtn.id = "settings-add-btn";
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "llm-reader-settings-btn-small danger";
+      deleteBtn.textContent = t("settings_delete_profile", currentLang);
+      deleteBtn.id = "settings-delete-btn";
+
+      profileRow.appendChild(profileSelect);
+      profileRow.appendChild(addBtn);
+      profileRow.appendChild(deleteBtn);
+
+      // 配置名称
+      const nameField = document.createElement("div");
+      nameField.className = "llm-reader-settings-field";
+      const nameLabel = document.createElement("label");
+      nameLabel.className = "llm-reader-settings-label";
+      nameLabel.textContent = t("settings_profile_name", currentLang);
+      const nameInput = document.createElement("input");
+      nameInput.className = "llm-reader-settings-input";
+      nameInput.type = "text";
+      nameInput.id = "settings-profile-name";
+      nameInput.placeholder = t("settings_placeholder_name", currentLang);
+      nameField.appendChild(nameLabel);
+      nameField.appendChild(nameInput);
+
+      // API URL
+      const urlField = document.createElement("div");
+      urlField.className = "llm-reader-settings-field";
+      const urlLabel = document.createElement("label");
+      urlLabel.className = "llm-reader-settings-label";
+      urlLabel.textContent = t("settings_api_url", currentLang);
+      const urlInput = document.createElement("input");
+      urlInput.className = "llm-reader-settings-input";
+      urlInput.type = "text";
+      urlInput.id = "settings-api-url";
+      urlInput.placeholder = t("settings_placeholder_url", currentLang);
+      urlField.appendChild(urlLabel);
+      urlField.appendChild(urlInput);
+
+      // API Key
+      const keyField = document.createElement("div");
+      keyField.className = "llm-reader-settings-field";
+      const keyLabel = document.createElement("label");
+      keyLabel.className = "llm-reader-settings-label";
+      keyLabel.textContent = t("settings_api_key", currentLang);
+      const keyInput = document.createElement("input");
+      keyInput.className = "llm-reader-settings-input";
+      keyInput.type = "password";
+      keyInput.id = "settings-api-key";
+      keyInput.placeholder = t("settings_placeholder_key", currentLang);
+      keyField.appendChild(keyLabel);
+      keyField.appendChild(keyInput);
+
+      // Model
+      const modelField = document.createElement("div");
+      modelField.className = "llm-reader-settings-field";
+      const modelLabel = document.createElement("label");
+      modelLabel.className = "llm-reader-settings-label";
+      modelLabel.textContent = t("settings_model", currentLang);
+      const modelInput = document.createElement("input");
+      modelInput.className = "llm-reader-settings-input";
+      modelInput.type = "text";
+      modelInput.id = "settings-model";
+      modelInput.placeholder = t("settings_placeholder_model", currentLang);
+      modelField.appendChild(modelLabel);
+      modelField.appendChild(modelInput);
+
+      llmSection.appendChild(llmTitle);
+      llmSection.appendChild(profileRow);
+      llmSection.appendChild(nameField);
+      llmSection.appendChild(urlField);
+      llmSection.appendChild(keyField);
+      llmSection.appendChild(modelField);
+
+      // 状态提示
+      const statusEl = document.createElement("div");
+      statusEl.className = "llm-reader-settings-status";
+      statusEl.id = "settings-status";
+
+      body.appendChild(langSection);
+      body.appendChild(llmSection);
+      body.appendChild(statusEl);
+
+      // 底部按钮
+      const footer = document.createElement("div");
+      footer.className = "llm-reader-settings-footer";
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "llm-reader-settings-btn-secondary";
+      cancelBtn.textContent = t("settings_close", currentLang);
+      cancelBtn.addEventListener("click", closeSettingsPanel);
+
+      const saveBtn = document.createElement("button");
+      saveBtn.className = "llm-reader-settings-btn-primary";
+      saveBtn.textContent = t("settings_save", currentLang);
+      saveBtn.id = "settings-save-btn";
+
+      footer.appendChild(cancelBtn);
+      footer.appendChild(saveBtn);
+
+      panel.appendChild(header);
+      panel.appendChild(body);
+      panel.appendChild(footer);
+      overlay.appendChild(panel);
+
+      // 点击遮罩层关闭
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+          closeSettingsPanel();
+        }
+      });
+
+      // 绑定事件
+      bindSettingsEvents(overlay);
+
+      return overlay;
+    }
+
+    function bindSettingsEvents(overlay) {
+      const settingsProfileSelect = overlay.querySelector("#settings-profile-select");
+      const settingsNameInput = overlay.querySelector("#settings-profile-name");
+      const settingsUrlInput = overlay.querySelector("#settings-api-url");
+      const settingsKeyInput = overlay.querySelector("#settings-api-key");
+      const settingsModelInput = overlay.querySelector("#settings-model");
+      const settingsAddBtn = overlay.querySelector("#settings-add-btn");
+      const settingsDeleteBtn = overlay.querySelector("#settings-delete-btn");
+      const settingsSaveBtn = overlay.querySelector("#settings-save-btn");
+      const settingsStatusEl = overlay.querySelector("#settings-status");
+      const settingsLangSelect = overlay.querySelector("#settings-language-select");
+
+      function setSettingsStatus(text, type = "") {
+        settingsStatusEl.textContent = text || "";
+        settingsStatusEl.className = "llm-reader-settings-status" + (type ? " " + type : "");
+      }
+
+      function renderSettingsProfileSelect() {
+        settingsProfileSelect.innerHTML = "";
+        settingsProfiles.forEach((p) => {
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.name || "(未命名配置)";
+          settingsProfileSelect.appendChild(opt);
+        });
+        settingsProfileSelect.value = settingsActiveId;
+      }
+
+      function loadProfileToForm() {
+        const profile = settingsProfiles.find((p) => p.id === settingsActiveId);
+        if (profile) {
+          settingsNameInput.value = profile.name || "";
+          settingsUrlInput.value = profile.apiUrl || "";
+          settingsKeyInput.value = profile.apiKey || "";
+          settingsModelInput.value = profile.model || "";
+        } else {
+          settingsNameInput.value = "";
+          settingsUrlInput.value = "";
+          settingsKeyInput.value = "";
+          settingsModelInput.value = "";
+        }
+      }
+
+      function genId() {
+        return "p_" + Date.now().toString(36) + "_" + Math.random().toString(16).slice(2, 8);
+      }
+
+      // 配置选择变化
+      settingsProfileSelect.addEventListener("change", () => {
+        settingsActiveId = settingsProfileSelect.value;
+        loadProfileToForm();
+      });
+
+      // 新增配置
+      settingsAddBtn.addEventListener("click", () => {
+        const newProfile = {
+          id: genId(),
+          name: t("settings_add_profile", currentLang) + " " + (settingsProfiles.length + 1),
+          apiUrl: "",
+          apiKey: "",
+          model: "",
+        };
+        settingsProfiles.push(newProfile);
+        settingsActiveId = newProfile.id;
+        renderSettingsProfileSelect();
+        loadProfileToForm();
+        setSettingsStatus(t("settings_added", currentLang), "success");
+        setTimeout(() => setSettingsStatus(""), 2000);
+      });
+
+      // 删除配置
+      settingsDeleteBtn.addEventListener("click", () => {
+        if (settingsProfiles.length <= 1) {
+          setSettingsStatus(t("settings_at_least_one", currentLang), "error");
+          setTimeout(() => setSettingsStatus(""), 2000);
+          return;
+        }
+        settingsProfiles = settingsProfiles.filter((p) => p.id !== settingsActiveId);
+        settingsActiveId = settingsProfiles[0]?.id || null;
+        renderSettingsProfileSelect();
+        loadProfileToForm();
+        setSettingsStatus(t("settings_deleted", currentLang), "success");
+        setTimeout(() => setSettingsStatus(""), 2000);
+      });
+
+      // 保存配置
+      settingsSaveBtn.addEventListener("click", async () => {
+        const name = settingsNameInput.value.trim();
+        const apiUrl = settingsUrlInput.value.trim();
+        const apiKey = settingsKeyInput.value.trim();
+        const model = settingsModelInput.value.trim();
+
+        if (!apiUrl || !apiKey || !model) {
+          setSettingsStatus(t("settings_fill_all", currentLang), "error");
+          setTimeout(() => setSettingsStatus(""), 2000);
+          return;
+        }
+
+        // 更新当前配置
+        const idx = settingsProfiles.findIndex((p) => p.id === settingsActiveId);
+        if (idx !== -1) {
+          settingsProfiles[idx] = {
+            ...settingsProfiles[idx],
+            name: name || "未命名配置",
+            apiUrl,
+            apiKey,
+            model,
+          };
+        }
+
+        try {
+          await chrome.storage.sync.set({
+            llmProfiles: settingsProfiles,
+            activeLlmId: settingsActiveId,
+          });
+
+          // 更新主面板的配置
+          llmProfiles = [...settingsProfiles];
+          activeLlmId = settingsActiveId;
+          
+          // 更新主面板的下拉框
+          profileSelect.innerHTML = "";
+          llmProfiles.forEach((p) => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.name || "(未命名配置)";
+            profileSelect.appendChild(opt);
+          });
+          profileSelect.value = activeLlmId;
+
+          renderSettingsProfileSelect();
+          setSettingsStatus(t("settings_saved", currentLang), "success");
+          setTimeout(() => setSettingsStatus(""), 2000);
+        } catch (err) {
+          console.error("保存配置失败:", err);
+          setSettingsStatus(t("settings_save_fail", currentLang) + ": " + err.message, "error");
+        }
+      });
+
+      // 语言切换
+      settingsLangSelect.addEventListener("change", async () => {
+        const newLang = settingsLangSelect.value;
+        currentLang = newLang;
+        await chrome.storage.sync.set({ language: newLang });
+        
+        // 更新设置面板的文本
+        updateSettingsPanelTexts(overlay);
+        
+        // 更新主面板的文本
+        updateUITexts();
+      });
+    }
+
+    function updateSettingsPanelTexts(overlay) {
+      const titleEl = overlay.querySelector(".llm-reader-settings-title");
+      const sectionTitles = overlay.querySelectorAll(".llm-reader-settings-section-title");
+      const labels = overlay.querySelectorAll(".llm-reader-settings-label");
+      const addBtn = overlay.querySelector("#settings-add-btn");
+      const deleteBtn = overlay.querySelector("#settings-delete-btn");
+      const saveBtn = overlay.querySelector("#settings-save-btn");
+      const cancelBtn = overlay.querySelector(".llm-reader-settings-btn-secondary");
+      const inputs = overlay.querySelectorAll(".llm-reader-settings-input");
+
+      if (titleEl) titleEl.textContent = t("settings_title", currentLang);
+      if (sectionTitles[0]) sectionTitles[0].textContent = t("settings_language", currentLang);
+      if (sectionTitles[1]) sectionTitles[1].textContent = t("settings_llm_config", currentLang);
+      if (labels[0]) labels[0].textContent = t("settings_profile_name", currentLang);
+      if (labels[1]) labels[1].textContent = t("settings_api_url", currentLang);
+      if (labels[2]) labels[2].textContent = t("settings_api_key", currentLang);
+      if (labels[3]) labels[3].textContent = t("settings_model", currentLang);
+      if (addBtn) addBtn.textContent = t("settings_add_profile", currentLang);
+      if (deleteBtn) deleteBtn.textContent = t("settings_delete_profile", currentLang);
+      if (saveBtn) saveBtn.textContent = t("settings_save", currentLang);
+      if (cancelBtn) cancelBtn.textContent = t("settings_close", currentLang);
+      
+      if (inputs[0]) inputs[0].placeholder = t("settings_placeholder_name", currentLang);
+      if (inputs[1]) inputs[1].placeholder = t("settings_placeholder_url", currentLang);
+      if (inputs[2]) inputs[2].placeholder = t("settings_placeholder_key", currentLang);
+      if (inputs[3]) inputs[3].placeholder = t("settings_placeholder_model", currentLang);
+    }
+
+    async function openSettingsPanel() {
+      // 加载配置
+      try {
+        const response = await chrome.runtime.sendMessage({ type: "GET_FULL_CONFIG" });
+        if (response?.ok) {
+          settingsProfiles = response.config.profiles || [];
+          settingsActiveId = response.config.activeLlmId || settingsProfiles[0]?.id;
+        }
+      } catch (e) {
+        console.error("加载配置失败:", e);
+      }
+
+      // 创建或显示设置面板
+      if (!settingsOverlay) {
+        settingsOverlay = createSettingsPanel();
+        document.documentElement.appendChild(settingsOverlay);
+      }
+
+      // 更新语言选择
+      const langSelect = settingsOverlay.querySelector("#settings-language-select");
+      if (langSelect) langSelect.value = currentLang;
+
+      // 更新配置列表
+      const profileSelect = settingsOverlay.querySelector("#settings-profile-select");
+      profileSelect.innerHTML = "";
+      settingsProfiles.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.name || "(未命名配置)";
+        profileSelect.appendChild(opt);
+      });
+      profileSelect.value = settingsActiveId;
+
+      // 加载当前配置到表单
+      const profile = settingsProfiles.find((p) => p.id === settingsActiveId);
+      const nameInput = settingsOverlay.querySelector("#settings-profile-name");
+      const urlInput = settingsOverlay.querySelector("#settings-api-url");
+      const keyInput = settingsOverlay.querySelector("#settings-api-key");
+      const modelInput = settingsOverlay.querySelector("#settings-model");
+
+      if (profile) {
+        nameInput.value = profile.name || "";
+        urlInput.value = profile.apiUrl || "";
+        keyInput.value = profile.apiKey || "";
+        modelInput.value = profile.model || "";
+      }
+
+      // 更新面板文本
+      updateSettingsPanelTexts(settingsOverlay);
+
+      // 显示面板
+      requestAnimationFrame(() => {
+        settingsOverlay.classList.add("visible");
+      });
+    }
+
+    function closeSettingsPanel() {
+      if (settingsOverlay) {
+        settingsOverlay.classList.remove("visible");
+      }
+    }
+
+    // 监听语言变化
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName === "sync" && changes.language) {
+        currentLang = changes.language.newValue || "zh-CN";
+        updateUITexts();
+      }
+    });
+
+    // 初始化时加载配置和语言
+    async function init() {
+      await loadLanguage();
+      updateUITexts();
+      await loadProfiles();
+      await loadFontSize();
+    }
+    
+    init();
   }
 
   // 等文档可用后渲染

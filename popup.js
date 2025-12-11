@@ -1,15 +1,24 @@
 // popup.js
+import { applyTranslations, getLanguage, t } from './i18n.js';
 
 const analyzeBtn = document.getElementById("analyze-btn");
 const statusEl = document.getElementById("status");
 const resultEl = document.getElementById("result");
 const openOptionsBtn = document.getElementById("open-options");
 
+let currentLang = "zh-CN";
+
 // 使用通用的状态设置函数
 const setStatus = (function(text, isError = false) {
   statusEl.textContent = text || "";
   statusEl.style.color = isError ? "#f97373" : "#9ca3af";
 });
+
+// 初始化多语言
+async function initI18n() {
+  currentLang = await getLanguage();
+  await applyTranslations();
+}
 
 openOptionsBtn?.addEventListener("click", () => {
   if (chrome.runtime.openOptionsPage) {
@@ -20,7 +29,8 @@ openOptionsBtn?.addEventListener("click", () => {
 });
 
 analyzeBtn?.addEventListener("click", async () => {
-  setStatus("正在读取网页内容并请求 LLM，请稍候…");
+  currentLang = await getLanguage();
+  setStatus(t("status_reading_page", currentLang));
   resultEl.value = "";
 
   try {
@@ -32,14 +42,14 @@ analyzeBtn?.addEventListener("click", async () => {
     ]);
 
     if (!apiKey || !apiUrl || !model) {
-      setStatus("请先在设置中配置 API 地址、API Key 和模型。", true);
+      setStatus(t("status_config_missing", currentLang), true);
       return;
     }
 
     // 获取当前 tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) {
-      setStatus("未找到当前标签页。", true);
+      setStatus(t("status_no_tab", currentLang), true);
       return;
     }
 
@@ -50,15 +60,18 @@ analyzeBtn?.addEventListener("click", async () => {
     });
 
     if (response?.ok) {
-      setStatus("解读完成。");
-      resultEl.value = response.result || "（LLM 无返回结果）";
+      setStatus(t("status_analyze_done", currentLang));
+      resultEl.value = response.result || t("status_no_result", currentLang);
     } else {
-      setStatus(response?.error || "解读失败，请稍后重试。", true);
+      setStatus(response?.error || t("status_analyze_fail", currentLang), true);
     }
   } catch (err) {
     console.error(err);
-    setStatus("调用失败：" + (err?.message || String(err)), true);
+    setStatus(t("status_call_fail", currentLang) + (err?.message || String(err)), true);
   }
 });
+
+// 初始化
+initI18n();
 
 

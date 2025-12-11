@@ -1,4 +1,5 @@
 // options.js
+import { applyTranslations, getLanguage, setLanguage, t } from './i18n.js';
 
 const profileSelect = document.getElementById("profile-select");
 const profileNameInput = document.getElementById("profile-name");
@@ -9,6 +10,7 @@ const addProfileBtn = document.getElementById("add-profile-btn");
 const deleteProfileBtn = document.getElementById("delete-profile-btn");
 const saveBtn = document.getElementById("save-btn");
 const statusEl = document.getElementById("status");
+const languageSelect = document.getElementById("language-select");
 
 let profiles = [];
 let activeLlmId = null;
@@ -22,13 +24,15 @@ function genId() {
   return "p_" + Date.now().toString(36) + "_" + Math.random().toString(16).slice(2, 8);
 }
 
-function renderProfileSelect() {
+async function renderProfileSelect() {
   if (!profileSelect) return;
   profileSelect.innerHTML = "";
+  const lang = await getLanguage();
+
   if (!profiles.length) {
     const opt = document.createElement("option");
     opt.value = "";
-    opt.textContent = "暂无配置，请先新增";
+    opt.textContent = t("name_no_profile", lang) || "暂无配置，请先新增"; // Consider adding this key
     profileSelect.appendChild(opt);
     profileNameInput.value = "";
     apiUrlInput.value = "";
@@ -56,6 +60,14 @@ function renderProfileSelect() {
 
 async function restore() {
   try {
+    // 1. 应用语言设置
+    await applyTranslations();
+    const currentLang = await getLanguage();
+    if (languageSelect) {
+      languageSelect.value = currentLang;
+    }
+
+    // 2. 加载配置
     const response = await chrome.runtime.sendMessage({ type: "GET_FULL_CONFIG" });
     if (!response?.ok) {
       throw new Error(response?.error || "获取配置失败");
@@ -70,7 +82,7 @@ async function restore() {
       // 没有任何配置时，创建一个空白配置
       const created = {
         id: genId(),
-        name: "我的第一个配置",
+        name: t("name_default_profile", currentLang) || "我的第一个配置", // Consider adding this key
         apiUrl: "",
         apiKey: "",
         model: "",
@@ -90,6 +102,14 @@ async function restore() {
   }
 }
 
+// 监听语言切换
+languageSelect?.addEventListener("change", async () => {
+  const newLang = languageSelect.value;
+  await setLanguage(newLang);
+  await applyTranslations();
+  renderProfileSelect(); // 重新渲染下拉框（如果有翻译的内容）
+});
+
 profileSelect?.addEventListener("change", () => {
   const id = profileSelect.value;
   const found = profiles.find((p) => p.id === id);
@@ -103,10 +123,11 @@ profileSelect?.addEventListener("change", () => {
 });
 
 addProfileBtn?.addEventListener("click", async () => {
+  const lang = await getLanguage();
   const id = genId();
   const newProfile = {
     id,
-    name: "新配置",
+    name: t("name_new_profile", lang) || "新配置", // Consider adding this key
     apiUrl: "",
     apiKey: "",
     model: "",
@@ -115,13 +136,14 @@ addProfileBtn?.addEventListener("click", async () => {
   activeLlmId = id;
   await chrome.storage.sync.set({ llmProfiles: profiles, activeLlmId });
   renderProfileSelect();
-  setStatus("已新增一个空白配置。");
+  setStatus(t("status_added_profile", lang) || "已新增一个空白配置。");
   const addProfileTimeout = setTimeout(() => setStatus(""), 1500);
 });
 
 deleteProfileBtn?.addEventListener("click", async () => {
+  const lang = await getLanguage();
   if (profiles.length <= 1) {
-    setStatus("至少需要保留一个配置，无法删除。", true);
+    setStatus(t("status_delete_fail", lang) || "至少需要保留一个配置，无法删除。", true);
     return;
   }
   const id = activeLlmId;
@@ -129,25 +151,26 @@ deleteProfileBtn?.addEventListener("click", async () => {
   activeLlmId = profiles[0].id;
   await chrome.storage.sync.set({ llmProfiles: profiles, activeLlmId });
   renderProfileSelect();
-  setStatus("已删除当前配置。");
+  setStatus(t("status_deleted_profile", lang) || "已删除当前配置。");
   const deleteProfileTimeout = setTimeout(() => setStatus(""), 1500);
 });
 
 saveBtn?.addEventListener("click", async () => {
-  setStatus("正在保存…");
+  const lang = await getLanguage();
+  setStatus(t("status_saving", lang) || "正在保存…");
   try {
     if (!activeLlmId) {
-      setStatus("当前没有可保存的配置，请先新增。", true);
+      setStatus(t("status_no_profile_to_save", lang) || "当前没有可保存的配置，请先新增。", true);
       return;
     }
 
-    const name = profileNameInput.value.trim() || "未命名配置";
+    const name = profileNameInput.value.trim() || t("name_unnamed_profile", lang) || "未命名配置";
     const apiUrl = apiUrlInput.value.trim();
     const apiKey = apiKeyInput.value.trim();
     const model = modelInput.value.trim();
 
     if (!apiUrl || !apiKey || !model) {
-      setStatus("配置名称、API 地址、API Key、模型名称均不能为空。", true);
+      setStatus(t("status_save_fail_empty", lang) || "配置名称、API 地址、API Key、模型名称均不能为空。", true);
       return;
     }
 
@@ -177,14 +200,12 @@ saveBtn?.addEventListener("click", async () => {
 
     renderProfileSelect();
   
-    setStatus("保存成功。你可以在聊天窗口中切换使用。");
+    setStatus(t("status_saved", lang) || "保存成功。你可以在聊天窗口中切换使用。");
     const saveSuccessTimeout = setTimeout(() => setStatus(""), 2000);
   } catch (err) {
     console.error(err);
-    setStatus("保存失败：" + (err?.message || String(err)), true);
+    setStatus((t("status_save_error", lang) || "保存失败：") + (err?.message || String(err)), true);
   }
 });
 
 restore();
-
-

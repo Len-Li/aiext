@@ -2,62 +2,68 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>LLM 解读助手 - 设置</title>
+    <title></title>
     <link rel="stylesheet" href="options.css" />
   </head>
   <body>
     <div id="app">
       <header>
-        <h1>LLM 解读助手设置</h1>
+        <h1 data-i18n="settingsTitle"></h1>
       </header>
       <main>
+        <!-- 语言设置区域 -->
+        <label class="field">
+          <span data-i18n="label_language">语言设置 / Language</span>
+          <select id="language-select">
+            <option value="zh-CN">简体中文</option>
+            <option value="en-US">English</option>
+          </select>
+        </label>
+
         <section class="field">
-          <span>选择或管理 LLM 配置</span>
+          <span data-i18n="section_llm_config">选择或管理 LLM 配置</span>
           <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
             <select id="profile-select"></select>
-            <button id="add-profile-btn" type="button">新增配置</button>
-            <button id="delete-profile-btn" type="button">删除当前</button>
+            <button id="add-profile-btn" type="button" data-i18n="btn_add_profile">新增配置</button>
+            <button id="delete-profile-btn" type="button" data-i18n="btn_delete_profile">删除当前</button>
           </div>
         </section>
 
         <label class="field">
-          <span>配置名称</span>
-          <input id="profile-name" type="text" placeholder="例如：DeepSeek 正式环境 / OpenAI 个人账号" />
+          <span data-i18n="label_profile_name">配置名称</span>
+          <input id="profile-name" type="text" data-i18n-placeholder="placeholder_profile_name" placeholder="例如：DeepSeek 正式环境 / OpenAI 个人账号" />
         </label>
 
         <label class="field">
-          <span>API 地址（URL）</span>
-          <input id="api-url" type="text" placeholder="例如：https://api.your-llm.com/v1/chat/completions" />
+          <span data-i18n="label_api_url">API 地址（URL）</span>
+          <input id="api-url" type="text" data-i18n-placeholder="placeholder_api_url" placeholder="例如：https://api.your-llm.com/v1/chat/completions" />
         </label>
 
         <label class="field">
-          <span>API Key</span>
-          <input id="api-key" type="password" placeholder="你的 LLM API Key" />
+          <span data-i18n="label_api_key">API Key</span>
+          <input id="api-key" type="password" data-i18n-placeholder="placeholder_api_key" placeholder="你的 LLM API Key" />
         </label>
 
         <label class="field">
-          <span>模型名称</span>
-          <input id="model" type="text" placeholder="例如：gpt-4.1, qwen-max 等" />
+          <span data-i18n="label_model">模型名称</span>
+          <input id="model" type="text" data-i18n-placeholder="placeholder_model" placeholder="例如：gpt-4.1, qwen-max 等" />
         </label>
 
-        <button id="save-btn">保存当前配置</button>
+        <button id="save-btn" data-i18n="btn_save">保存当前配置</button>
         <div id="status"></div>
 
         <section id="tip">
-          <h2>说明</h2>
+          <h2 data-i18n="tip_title">说明</h2>
           <p>
-            当前实现默认按照「OpenAI Chat Completions」兼容接口发送请求：
+            <span data-i18n="tip_content_1">当前实现默认按照「OpenAI Chat Completions」兼容接口发送请求：</span>
             <code>{ model, messages: [...] }</code>。
           </p>
           <p>
-            如果你的接口格式不同，可以根据需要修改 <code>background.js</code> 中的
-            <code>callLLM</code> 函数。
+            <span data-i18n="tip_content_2">如果你的接口格式不同，可以根据需要修改 background.js 中的 callLLM 函数。</span>
           </p>
         </section>
       </main>
     </div>
     <script src="options.js" type="module"></script>
   </body>
-  </html>
-
-
+</html>
