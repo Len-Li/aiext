@@ -19,13 +19,11 @@
   ],
   "action": {
     "default_title": "LLM 解读本页",
-    "default_popup": "popup.html",
     "default_icon": {
       "16": "img/logo.png",
       "32": "img/logo.png"
     }
   },
-  "options_page": "options.html",
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -45,4 +43,3 @@
     }
   ]
 }
-

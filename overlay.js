@@ -3124,6 +3124,24 @@ ${bodyText}`,
     }
     
     init();
+
+    // 监听来自 background 的消息，触发分析
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message?.type === "TRIGGER_ANALYSIS") {
+        // 确保面板可见
+        if (panel.style.display === "none") {
+          panel.style.display = "flex";
+        }
+        // 触发分析
+        if (analyzeBtn && !isStreaming) {
+          analyzeBtn.click();
+        }
+        sendResponse({ ok: true });
+        return true;
+      }
+      // 其他消息类型可以继续处理
+      return false;
+    });
   }
 
   // 等文档可用后渲染

@@ -597,8 +597,18 @@ async function cleanupHistory(history) {
   if (validHistory.length > MAX_HISTORY_COUNT) {
     return validHistory.slice(0, MAX_HISTORY_COUNT);
   }
-  
   return validHistory;
 }
+
+// 点击扩展图标时触发分析
+chrome.action.onClicked.addListener(async (tab) => {
+  // 向当前标签页发送消息，触发分析
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: "TRIGGER_ANALYSIS" });
+  } catch (error) {
+    // 如果内容脚本未注入（例如页面未加载），则忽略错误
+    console.warn("无法向标签页发送消息，内容脚本可能未注入:", error);
+  }
+});
 
 
