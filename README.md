@@ -9,7 +9,18 @@
 - `content_script.js`：注入到网页中，提取可读文本（`document.body.innerText`）
 - `popup.html / popup.js / popup.css`：工具按钮入口，点击后触发「解读当前网页」，展示结果
 - `options.html / options.js / options.css`：设置页，可填写 API URL / API Key / 模型
+- `overlay.js`：悬浮窗聊天界面，支持流式对话、多语言、字体缩放、面板拖拽和缩放
+- `i18n.js` / `i18n-data.js`：国际化支持（中/英/日）
+- `utils.js`：共享工具函数
 - `icons/`：图标（当前未提供，可自行添加 PNG 图标并与 `manifest.json` 中的路径对应）
+
+### 最新优化（2025-12-12）
+
+- **代码结构和模块化**：合并了 `background.js` 中重复的消息监听器，统一了历史记录相关消息处理。
+- **错误处理和日志**：添加了 Service Worker 全局错误处理（`error` 和 `unhandledrejection`），改进了 `callLLM` 函数的错误消息和 60 秒超时机制。
+- **性能优化**：为配置读取和页面数据获取添加了内存缓存，减少重复的存储访问和脚本执行。
+- **代码一致性和可维护性**：移除了未使用的 `createStatusSetter` 重复定义，为关键函数添加了 JSDoc 注释，统一了代码风格。
+- **国际化**：支持中/英/日三语界面，可通过悬浮窗设置切换。
 
 ### 如何在 Chrome 中加载
 
@@ -68,6 +79,15 @@ Content-Type: application/json
 3. 在弹出的 popup 中点击 **「解读当前网页」**
 4. 等待片刻，解读结果会显示在下方文本框中
 
+### 悬浮窗聊天模式
+
+除了传统的 popup 解读，本扩展还提供了更强大的悬浮窗聊天模式：
+
+- 在任意网页上按 **Ctrl+Shift+L**（可自定义）打开悬浮窗
+- 支持流式对话、多轮对话、历史记录管理
+- 可切换语言、调整字体大小、拖拽和缩放面板
+- 对话历史保存在本地存储中，支持搜索和删除
+
 ### 安全与隐私
 
 - API Key、API 地址和模型名称保存在 `chrome.storage.sync` 中：
@@ -77,4 +97,4 @@ Content-Type: application/json
 
 ## 作者
 
-张三
+李乐恒

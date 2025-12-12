@@ -180,8 +180,8 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-close {
         border-radius: 999px;
-        width: 22px;
-        height: 22px;
+        width: 28px;
+        height: 28px;
         border: none;
         background: transparent;
         color: #5f6368;
@@ -785,6 +785,251 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-settings-status.success {
         color: #1e8e3e;
       }
+
+      /* History Panel Styles */
+      .llm-reader-history-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+      }
+
+      .llm-reader-history-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .llm-reader-history-panel {
+        width: 600px;
+        max-width: 90vw;
+        max-height: 80vh;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow:
+          0 3px 5px -1px rgba(0, 0, 0, 0.2),
+          0 6px 10px 0 rgba(0, 0, 0, 0.14),
+          0 1px 18px 0 rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        color: #202124;
+        font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        transform: scale(0.95);
+        transition: transform 0.2s ease;
+      }
+
+      .llm-reader-history-overlay.visible .llm-reader-history-panel {
+        transform: scale(1);
+      }
+
+      .llm-reader-history-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        background: #f8f9fa;
+      }
+
+      .llm-reader-history-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #202124;
+      }
+
+      .llm-reader-history-close {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #5f6368;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: background 0.15s ease;
+      }
+
+      .llm-reader-history-close:hover {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      .llm-reader-history-search {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      }
+
+      .llm-reader-history-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #202124;
+        font-size: 13px;
+        outline: none;
+        box-sizing: border-box;
+      }
+
+      .llm-reader-history-search-input:focus {
+        border-color: #1a73e8;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+      }
+
+      .llm-reader-history-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+      }
+
+      .llm-reader-history-item {
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        background: #ffffff;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .llm-reader-history-item:hover {
+        background: #f8f9fa;
+        border-color: #1a73e8;
+      }
+
+      .llm-reader-history-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 6px;
+      }
+
+      .llm-reader-history-item-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #202124;
+        flex: 1;
+        margin-right: 8px;
+        line-height: 1.3;
+      }
+
+      .llm-reader-history-item-date {
+        font-size: 11px;
+        color: #5f6368;
+        white-space: nowrap;
+      }
+
+      .llm-reader-history-item-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+        font-size: 11px;
+        color: #5f6368;
+      }
+
+      .llm-reader-history-item-url {
+        color: #1a73e8;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+      }
+
+      .llm-reader-history-item-url:hover {
+        text-decoration: underline;
+      }
+
+      .llm-reader-history-item-preview {
+        font-size: 12px;
+        color: #5f6368;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .llm-reader-history-item-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .llm-reader-history-btn-small {
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #5f6368;
+        font-size: 11px;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .llm-reader-history-btn-small:hover {
+        background: #f6f9fe;
+        border-color: #1a73e8;
+        color: #1a73e8;
+      }
+
+      .llm-reader-history-btn-small.danger {
+        color: #d93025;
+        border-color: #d93025;
+      }
+
+      .llm-reader-history-btn-small.danger:hover {
+        background: #fce8e6;
+      }
+
+      .llm-reader-history-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #5f6368;
+        font-size: 14px;
+      }
+
+      .llm-reader-history-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        background: #f8f9fa;
+      }
+
+      .llm-reader-history-count {
+        font-size: 12px;
+        color: #5f6368;
+      }
+
+      .llm-reader-history-clear-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #d93025;
+        background: #ffffff;
+        color: #d93025;
+        font-size: 12px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+      }
+
+      .llm-reader-history-clear-btn:hover {
+        background: #fce8e6;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -827,6 +1072,11 @@ if (!window.__llm_reader_overlay_injected__) {
     const analyzeBtn = document.createElement("button");
     analyzeBtn.className = "llm-reader-btn";
     analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
+
+    const historyBtn = document.createElement("button");
+    historyBtn.className = "llm-reader-settings-btn";
+    historyBtn.textContent = "📚";
+    historyBtn.title = t("overlay_history_btn", currentLang);
 
     const settingsBtn = document.createElement("button");
     settingsBtn.className = "llm-reader-settings-btn";
@@ -885,6 +1135,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
     const utilityActionsGroup = document.createElement("div");
     utilityActionsGroup.className = "llm-reader-actions-group";
+    utilityActionsGroup.appendChild(historyBtn);
     utilityActionsGroup.appendChild(settingsBtn);
 
     actions.appendChild(mainActionsGroup);
@@ -1890,6 +2141,10 @@ if (!window.__llm_reader_overlay_injected__) {
       openSettingsPanel();
     });
 
+    historyBtn.addEventListener("click", () => {
+      openHistoryPanel();
+    });
+
     analyzeBtn.addEventListener("click", async () => {
       if (isStreaming) return;
       isStreaming = true;
@@ -1932,7 +2187,7 @@ ${bodyText}`,
             assistantBubble.innerHTML = markdownToHtml(full);
             smartScrollToBottom();
           },
-          (full) => {
+          async (full) => {
             messages.push({ role: "assistant", content: full });
             setStatus(t("overlay_analyze_done", currentLang));
             // 更新问答对和导航，但保持用户当前位置不变
@@ -1941,6 +2196,9 @@ ${bodyText}`,
               currentQaIndex = qaPairs.length - 1;
             }
             updateNavigation(true); // preserveScroll = true，保持滚动位置
+            
+            // 保存对话历史
+            await saveChatHistory();
           }
         );
       } catch (e) {
@@ -1986,9 +2244,9 @@ ${bodyText}`,
             assistantBubble.innerHTML = markdownToHtml(full);
             smartScrollToBottom();
           },
-          (full) => {
+          async (full) => {
             // 添加助手回复并更新导航
-            addAssistantResponseAndUpdateNavigation(full);
+            await addAssistantResponseAndUpdateNavigation(full);
           }
         );
       } catch (e) {
@@ -2007,7 +2265,7 @@ ${bodyText}`,
     }
 
     // 统一的助手回复处理函数
-    function addAssistantResponseAndUpdateNavigation(full) {
+    async function addAssistantResponseAndUpdateNavigation(full) {
       messages = messages.concat({ role: "assistant", content: full });
       setStatus(t("overlay_replied", currentLang));
       // 更新问答对和导航，但保持用户当前位置不变
@@ -2016,6 +2274,9 @@ ${bodyText}`,
         currentQaIndex = qaPairs.length - 1;
       }
       updateNavigation(true); // preserveScroll = true，保持滚动位置
+      
+      // 保存对话历史
+      await saveChatHistory();
     }
 
     sendBtn.addEventListener("click", () => {
@@ -2101,6 +2362,7 @@ ${bodyText}`,
       langSelect.innerHTML = `
         <option value="zh-CN">简体中文</option>
         <option value="en-US">English</option>
+        <option value="ja-JP">日本語</option>
       `;
       langSelect.value = currentLang;
 
@@ -2485,6 +2747,363 @@ ${bodyText}`,
     function closeSettingsPanel() {
       if (settingsOverlay) {
         settingsOverlay.classList.remove("visible");
+      }
+    }
+
+    // ========== 历史记录面板相关 ==========
+    let historyOverlay = null;
+    let chatHistory = [];
+
+    // 保存对话历史到存储
+    async function saveChatHistory() {
+      try {
+        // 只保存有实际内容的对话（至少包含一个用户消息）
+        const validHistory = messages.filter(msg => msg.role !== 'system' && msg.content.trim());
+        if (validHistory.length === 0) return;
+
+        const historyItem = {
+          id: Date.now().toString(36) + '_' + Math.random().toString(16).slice(2, 8),
+          timestamp: Date.now(),
+          url: window.location.href,
+          title: document.title || '未知页面',
+          messages: messages,
+          preview: generateHistoryPreview(validHistory)
+        };
+
+        // 获取现有历史记录（使用local存储，避免sync配额限制）
+        const result = await chrome.storage.local.get(['chatHistory']);
+        const existingHistory = result.chatHistory || [];
+        
+        // 添加新记录到开头
+        existingHistory.unshift(historyItem);
+        
+        // 限制历史记录数量（最多保存100条）
+        if (existingHistory.length > 100) {
+          existingHistory.splice(100);
+        }
+
+        await chrome.storage.local.set({ chatHistory: existingHistory });
+        // 显示保存成功提示
+        setStatus(t("history_saved", currentLang), false);
+        setTimeout(() => setStatus(""), 2000);
+      } catch (e) {
+        console.error('保存对话历史失败:', e);
+        setStatus(t("history_save_failed", currentLang), true);
+      }
+    }
+
+    // 生成历史记录预览文本
+    function generateHistoryPreview(messages) {
+      const userMessages = messages.filter(msg => msg.role === 'user');
+      if (userMessages.length === 0) return '';
+      
+      const firstUserMessage = userMessages[0].content;
+      const preview = firstUserMessage.length > 100
+        ? firstUserMessage.substring(0, 100) + '...'
+        : firstUserMessage;
+      
+      return preview;
+    }
+
+    // 加载对话历史
+    async function loadChatHistory() {
+      try {
+        const result = await chrome.storage.local.get(['chatHistory']);
+        chatHistory = result.chatHistory || [];
+        return chatHistory;
+      } catch (e) {
+        console.error('加载对话历史失败:', e);
+        return [];
+      }
+    }
+
+    // 创建历史记录面板
+    function createHistoryPanel() {
+      // 创建遮罩层
+      const overlay = document.createElement("div");
+      overlay.className = "llm-reader-history-overlay";
+
+      // 创建历史记录面板
+      const panel = document.createElement("div");
+      panel.className = "llm-reader-history-panel";
+
+      // 头部
+      const header = document.createElement("div");
+      header.className = "llm-reader-history-header";
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "llm-reader-history-title";
+      titleEl.textContent = t("history_title", currentLang);
+
+      const closeBtn = document.createElement("button");
+      closeBtn.className = "llm-reader-history-close";
+      closeBtn.textContent = "×";
+      closeBtn.addEventListener("click", closeHistoryPanel);
+
+      header.appendChild(titleEl);
+      header.appendChild(closeBtn);
+
+      // 搜索区域
+      const searchSection = document.createElement("div");
+      searchSection.className = "llm-reader-history-search";
+
+      const searchInput = document.createElement("input");
+      searchInput.className = "llm-reader-history-search-input";
+      searchInput.type = "text";
+      searchInput.placeholder = t("history_search_placeholder", currentLang);
+      searchInput.id = "history-search-input";
+
+      searchSection.appendChild(searchInput);
+
+      // 历史记录列表
+      const listSection = document.createElement("div");
+      listSection.className = "llm-reader-history-list";
+      listSection.id = "history-list";
+
+      // 底部
+      const footer = document.createElement("div");
+      footer.className = "llm-reader-history-footer";
+
+      const countEl = document.createElement("div");
+      countEl.className = "llm-reader-history-count";
+      countEl.id = "history-count";
+      countEl.textContent = t("history_count", currentLang).replace("{count}", "0");
+
+      const clearBtn = document.createElement("button");
+      clearBtn.className = "llm-reader-history-clear-btn";
+      clearBtn.textContent = t("history_clear_all", currentLang);
+      clearBtn.id = "history-clear-btn";
+
+      footer.appendChild(countEl);
+      footer.appendChild(clearBtn);
+
+      panel.appendChild(header);
+      panel.appendChild(searchSection);
+      panel.appendChild(listSection);
+      panel.appendChild(footer);
+      overlay.appendChild(panel);
+
+      // 点击遮罩层关闭
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+          closeHistoryPanel();
+        }
+      });
+
+      // 绑定事件
+      bindHistoryEvents(overlay);
+
+      return overlay;
+    }
+
+    // 绑定历史记录面板事件
+    function bindHistoryEvents(overlay) {
+      const searchInput = overlay.querySelector("#history-search-input");
+      const listEl = overlay.querySelector("#history-list");
+      const countEl = overlay.querySelector("#history-count");
+      const clearBtn = overlay.querySelector("#history-clear-btn");
+
+      // 渲染历史记录列表
+      function renderHistoryList(historyItems) {
+        listEl.innerHTML = "";
+        
+        if (historyItems.length === 0) {
+          const emptyEl = document.createElement("div");
+          emptyEl.className = "llm-reader-history-empty";
+          emptyEl.textContent = t("history_empty", currentLang);
+          listEl.appendChild(emptyEl);
+          countEl.textContent = t("history_count", currentLang).replace("{count}", "0");
+          return;
+        }
+
+        historyItems.forEach(item => {
+          const itemEl = createHistoryItem(item);
+          listEl.appendChild(itemEl);
+        });
+
+        countEl.textContent = t("history_count", currentLang).replace("{count}", historyItems.length);
+      }
+
+      // 创建历史记录项
+      function createHistoryItem(item) {
+        const itemEl = document.createElement("div");
+        itemEl.className = "llm-reader-history-item";
+
+        // 头部
+        const headerEl = document.createElement("div");
+        headerEl.className = "llm-reader-history-item-header";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "llm-reader-history-item-title";
+        titleEl.textContent = item.title || '未知页面';
+
+        const dateEl = document.createElement("div");
+        dateEl.className = "llm-reader-history-item-date";
+        dateEl.textContent = formatDate(item.timestamp);
+
+        headerEl.appendChild(titleEl);
+        headerEl.appendChild(dateEl);
+
+        // 元信息
+        const metaEl = document.createElement("div");
+        metaEl.className = "llm-reader-history-item-meta";
+
+        const urlEl = document.createElement("a");
+        urlEl.className = "llm-reader-history-item-url";
+        urlEl.href = item.url;
+        urlEl.target = "_blank";
+        urlEl.textContent = new URL(item.url).hostname;
+
+        const messageCountEl = document.createElement("span");
+        messageCountEl.textContent = `${item.messages.filter(m => m.role !== 'system').length} ${t("history_messages", currentLang)}`;
+
+        metaEl.appendChild(urlEl);
+        metaEl.appendChild(messageCountEl);
+
+        // 预览
+        const previewEl = document.createElement("div");
+        previewEl.className = "llm-reader-history-item-preview";
+        previewEl.textContent = item.preview || '';
+
+        // 操作按钮
+        const actionsEl = document.createElement("div");
+        actionsEl.className = "llm-reader-history-item-actions";
+
+        const loadBtn = document.createElement("button");
+        loadBtn.className = "llm-reader-history-btn-small";
+        loadBtn.textContent = t("history_load", currentLang);
+        loadBtn.addEventListener("click", () => loadHistoryItem(item));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "llm-reader-history-btn-small danger";
+        deleteBtn.textContent = t("history_delete", currentLang);
+        deleteBtn.addEventListener("click", () => deleteHistoryItem(item.id));
+
+        actionsEl.appendChild(loadBtn);
+        actionsEl.appendChild(deleteBtn);
+
+        itemEl.appendChild(headerEl);
+        itemEl.appendChild(metaEl);
+        itemEl.appendChild(previewEl);
+        itemEl.appendChild(actionsEl);
+
+        return itemEl;
+      }
+
+      // 格式化日期
+      function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+          return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        } else if (diffDays === 1) {
+          return t("history_yesterday", currentLang);
+        } else if (diffDays < 7) {
+          return `${diffDays} ${t("history_days_ago", currentLang)}`;
+        } else {
+          return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+        }
+      }
+
+      // 搜索功能
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase().trim();
+        let filteredHistory = chatHistory;
+
+        if (query) {
+          filteredHistory = chatHistory.filter(item =>
+            (item.title && item.title.toLowerCase().includes(query)) ||
+            (item.preview && item.preview.toLowerCase().includes(query)) ||
+            (item.url && item.url.toLowerCase().includes(query))
+          );
+        }
+
+        renderHistoryList(filteredHistory);
+      });
+
+      // 清空历史记录
+      clearBtn.addEventListener("click", async () => {
+        if (confirm(t("history_clear_confirm", currentLang))) {
+          try {
+            await chrome.storage.sync.set({ chatHistory: [] });
+            chatHistory = [];
+            renderHistoryList([]);
+          } catch (e) {
+            console.error('清空历史记录失败:', e);
+            alert(t("history_clear_error", currentLang));
+          }
+        }
+      });
+
+      // 加载历史记录项
+      async function loadHistoryItem(item) {
+        try {
+          messages = [...item.messages];
+          currentQaIndex = -1;
+          updateNavigation();
+          closeHistoryPanel();
+          panel.style.display = "flex";
+          setStatus(t("history_loaded", currentLang));
+          setTimeout(() => setStatus(""), 2000);
+        } catch (e) {
+          console.error('加载历史记录失败:', e);
+          setStatus(t("history_load_error", currentLang), true);
+        }
+      }
+
+      // 删除历史记录项
+      async function deleteHistoryItem(itemId) {
+        try {
+          chatHistory = chatHistory.filter(item => item.id !== itemId);
+          await chrome.storage.sync.set({ chatHistory });
+          
+          // 重新渲染列表
+          const query = searchInput.value.toLowerCase().trim();
+          let filteredHistory = chatHistory;
+          
+          if (query) {
+            filteredHistory = chatHistory.filter(item =>
+              (item.title && item.title.toLowerCase().includes(query)) ||
+              (item.preview && item.preview.toLowerCase().includes(query)) ||
+              (item.url && item.url.toLowerCase().includes(query))
+            );
+          }
+          
+          renderHistoryList(filteredHistory);
+        } catch (e) {
+          console.error('删除历史记录失败:', e);
+          alert(t("history_delete_error", currentLang));
+        }
+      }
+
+      // 初始渲染
+      renderHistoryList(chatHistory);
+    }
+
+    // 打开历史记录面板
+    async function openHistoryPanel() {
+      // 加载历史记录
+      await loadChatHistory();
+
+      // 创建或显示历史记录面板
+      if (!historyOverlay) {
+        historyOverlay = createHistoryPanel();
+        document.documentElement.appendChild(historyOverlay);
+      }
+
+      // 显示面板
+      requestAnimationFrame(() => {
+        historyOverlay.classList.add("visible");
+      });
+    }
+
+    // 关闭历史记录面板
+    function closeHistoryPanel() {
+      if (historyOverlay) {
+        historyOverlay.classList.remove("visible");
       }
     }
 
