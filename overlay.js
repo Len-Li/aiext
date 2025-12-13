@@ -102,7 +102,7 @@ if (!window.__llm_reader_overlay_injected__) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 12px 8px;
+        padding: 8px 10px 6px;
         border-bottom: 1px solid rgba(0, 0, 0, 0.06);
         cursor: move;
         background: #f8f9fa;
@@ -119,6 +119,7 @@ if (!window.__llm_reader_overlay_injected__) {
         gap: 6px;
         flex-wrap: wrap;
         justify-content: flex-end;
+        min-width: 0;
       }
 
       .llm-reader-actions-group {
@@ -129,11 +130,12 @@ if (!window.__llm_reader_overlay_injected__) {
         border-radius: 999px;
         background: #f3f4f6;
         border: 1px solid #e5e7eb;
+        flex-shrink: 0;
       }
 
       .llm-reader-profile-select {
-        min-width: 120px;
-        max-width: 200px;
+        min-width: 100px;
+        max-width: 180px;
         padding: 2px 6px;
         border-radius: 999px;
         border: 1px solid #dadce0;
@@ -142,6 +144,7 @@ if (!window.__llm_reader_overlay_injected__) {
         font-size: var(--llm-reader-select-font-size);
         outline: none;
         cursor: pointer;
+        flex-shrink: 0;
       }
 
       .llm-reader-btn {
@@ -154,7 +157,12 @@ if (!window.__llm_reader_overlay_injected__) {
         cursor: pointer;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 15px;
+        box-sizing: border-box;
       }
 
       .llm-reader-btn:hover {
@@ -165,17 +173,31 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-settings-btn {
         background: transparent;
         border: none;
-        padding: 4px;
-        font-size: 16px;
+        padding: 3px 8px;
+        font-size: 14px;
         line-height: 1;
         cursor: pointer;
         opacity: 0.7;
         transition: opacity 0.15s ease, transform 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: 15px;
+        box-sizing: border-box;
+        border-radius: 999px;
+        border: 1px solid #dadce0;
+        background: #ffffff;
+        color: #1f2933;
       }
 
       .llm-reader-settings-btn:hover {
         opacity: 1;
         transform: rotate(30deg);
+        background: #f6f9fe;
+        border-color: #1a73e8;
       }
 
       .llm-reader-close {
@@ -190,6 +212,7 @@ if (!window.__llm_reader_overlay_injected__) {
         align-items: center;
         justify-content: center;
         font-size: var(--llm-reader-close-font-size);
+        box-sizing: border-box;
       }
 
       .llm-reader-font-size-controls {
@@ -197,6 +220,7 @@ if (!window.__llm_reader_overlay_injected__) {
         align-items: center;
         gap: 3px;
         margin-left: 0;
+        flex-shrink: 0;
       }
 
       .llm-reader-font-size-btn {
@@ -213,6 +237,7 @@ if (!window.__llm_reader_overlay_injected__) {
         justify-content: center;
         font-weight: bold;
         line-height: 1;
+        flex-shrink: 0;
       }
 
       .llm-reader-font-size-btn:hover {
@@ -231,10 +256,10 @@ if (!window.__llm_reader_overlay_injected__) {
       }
 
       .llm-reader-panel-body {
-        padding: 8px 10px 10px;
+        padding: 6px 8px 8px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
         position: relative;
         flex: 1;
         min-height: 0;
@@ -376,20 +401,20 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-input-row {
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-top: 4px;
+        gap: 4px;
+        margin-top: 2px;
       }
 
       .llm-reader-input {
         flex: 1;
-        min-height: 32px;
+        min-height: 28px;
         max-height: 80px;
         resize: none;
-        border-radius: 8px;
+        border-radius: 6px;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #202124;
-        padding: 5px 8px;
+        padding: 4px 6px;
         font-size: var(--llm-reader-input-font-size);
         box-sizing: border-box;
       }
@@ -400,7 +425,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-send-btn {
         border-radius: 999px;
-        padding: 5px 10px;
+        padding: 4px 8px;
         border: none;
         background: #1a73e8;
         color: #ffffff;
@@ -408,8 +433,11 @@ if (!window.__llm_reader_overlay_injected__) {
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        justify-content: center;
+        gap: 3px;
         white-space: nowrap;
+        min-width: 15px;
+        box-sizing: border-box;
       }
 
       .llm-reader-send-btn:disabled {
@@ -510,6 +538,7 @@ if (!window.__llm_reader_overlay_injected__) {
         align-items: center;
         gap: 3px;
         margin-left: 0;
+        flex-shrink: 0;
       }
 
       .llm-reader-nav-btn {
@@ -527,6 +556,7 @@ if (!window.__llm_reader_overlay_injected__) {
         font-weight: bold;
         line-height: 1;
         padding: 0;
+        flex-shrink: 0;
       }
 
       .llm-reader-nav-btn:hover {
@@ -2363,6 +2393,8 @@ ${bodyText}`,
         <option value="zh-CN">简体中文</option>
         <option value="en-US">English</option>
         <option value="ja-JP">日本語</option>
+        <option value="de-DE">Deutsch</option>
+        <option value="fr-FR">Français</option>
       `;
       langSelect.value = currentLang;
 
