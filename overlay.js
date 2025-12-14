@@ -37,6 +37,9 @@ if (!window.__llm_reader_overlay_injected__) {
         --llm-reader-select-font-size: 11px;
         --llm-reader-close-font-size: 12px;
         --llm-reader-role-font-size: 11px;
+        --llm-reader-analyze-btn-font-size: 13px;
+        --llm-reader-profile-select-font-size: 13px;
+        --llm-reader-user-input-font-size: 13px;
       }
       
       .llm-reader-float-btn {
@@ -82,6 +85,7 @@ if (!window.__llm_reader_overlay_injected__) {
         transform: none;
         z-index: 2147483647;
         width: 33.33%;
+        min-width: 420px;
         height: 98vh;
         max-height: 100vh;
         background: #ffffff;
@@ -110,38 +114,40 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-panel-title {
         font-size: var(--llm-reader-title-font-size);
-        font-weight: 500;
+        font-weight: 400;
       }
 
       .llm-reader-panel-actions {
         display: flex;
         align-items: center;
-        gap: 6px;
-        flex-wrap: wrap;
+        gap: 4px;
+        flex-wrap: nowrap;
         justify-content: flex-end;
         min-width: 0;
+        overflow: hidden;
       }
 
       .llm-reader-actions-group {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        padding: 2px 6px;
+        gap: 2px;
+        padding: 2px 4px;
         border-radius: 999px;
         background: #f3f4f6;
         border: 1px solid #e5e7eb;
         flex-shrink: 0;
+        min-width: 0;
       }
 
       .llm-reader-profile-select {
-        min-width: 100px;
-        max-width: 180px;
-        padding: 2px 6px;
+        min-width: 80px;
+        max-width: 140px;
+        padding: 2px 4px;
         border-radius: 999px;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #202124;
-        font-size: var(--llm-reader-select-font-size);
+        font-size: var(--llm-reader-profile-select-font-size);
         outline: none;
         cursor: pointer;
         flex-shrink: 0;
@@ -149,7 +155,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-btn {
         border-radius: 999px;
-        padding: 3px 8px;
+        padding: 2px 6px;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #1f2933;
@@ -158,10 +164,10 @@ if (!window.__llm_reader_overlay_injected__) {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 3px;
+        gap: 2px;
         white-space: nowrap;
         flex-shrink: 0;
-        min-width: 15px;
+        min-width: 12px;
         box-sizing: border-box;
       }
 
@@ -173,19 +179,19 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-settings-btn {
         background: transparent;
         border: none;
-        padding: 3px 8px;
-        font-size: 14px;
+        padding: 2px 6px;
+        font-size: 12px;
         line-height: 1;
         cursor: pointer;
         opacity: 0.7;
-        transition: opacity 0.15s ease, transform 0.15s ease;
+        transition: opacity 0.15s ease;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 3px;
+        gap: 2px;
         white-space: nowrap;
         flex-shrink: 0;
-        min-width: 15px;
+        min-width: 12px;
         box-sizing: border-box;
         border-radius: 999px;
         border: 1px solid #dadce0;
@@ -195,9 +201,14 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-settings-btn:hover {
         opacity: 1;
-        transform: rotate(30deg);
         background: #f6f9fe;
         border-color: #1a73e8;
+      }
+
+      .llm-reader-settings-btn:hover span {
+        display: inline-block;
+        transform: rotate(30deg);
+        transition: transform 0.15s ease;
       }
 
       .llm-reader-close {
@@ -218,19 +229,19 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-font-size-controls {
         display: flex;
         align-items: center;
-        gap: 3px;
+        gap: 2px;
         margin-left: 0;
         flex-shrink: 0;
       }
 
       .llm-reader-font-size-btn {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         border-radius: 50%;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #1f2933;
-        font-size: 14px;
+        font-size: 12px;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -415,7 +426,7 @@ if (!window.__llm_reader_overlay_injected__) {
         background: #ffffff;
         color: #202124;
         padding: 4px 6px;
-        font-size: var(--llm-reader-input-font-size);
+        font-size: var(--llm-reader-user-input-font-size);
         box-sizing: border-box;
       }
 
@@ -536,19 +547,19 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-navigation-controls {
         display: flex;
         align-items: center;
-        gap: 3px;
+        gap: 2px;
         margin-left: 0;
         flex-shrink: 0;
       }
 
       .llm-reader-nav-btn {
-        width: 22px;
-        height: 22px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         border: 1px solid #dadce0;
         background: #ffffff;
         color: #1f2933;
-        font-size: 11px;
+        font-size: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1101,17 +1112,24 @@ if (!window.__llm_reader_overlay_injected__) {
 
     const analyzeBtn = document.createElement("button");
     analyzeBtn.className = "llm-reader-btn";
+    analyzeBtn.style.fontSize = "var(--llm-reader-analyze-btn-font-size)";
     analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
 
     const historyBtn = document.createElement("button");
     historyBtn.className = "llm-reader-settings-btn";
-    historyBtn.textContent = "📚";
     historyBtn.title = t("overlay_history_btn", currentLang);
+    
+    const historyIcon = document.createElement("span");
+    historyIcon.textContent = "📚";
+    historyBtn.appendChild(historyIcon);
 
     const settingsBtn = document.createElement("button");
     settingsBtn.className = "llm-reader-settings-btn";
-    settingsBtn.textContent = "⚙️";
     settingsBtn.title = t("overlay_settings_btn", currentLang);
+    
+    const settingsIcon = document.createElement("span");
+    settingsIcon.textContent = "⚙️";
+    settingsBtn.appendChild(settingsIcon);
 
     const closeBtn = document.createElement("button");
     closeBtn.className = "llm-reader-close";
@@ -1290,7 +1308,7 @@ if (!window.__llm_reader_overlay_injected__) {
       
       currentFontSize = newSize;
       
-      // 更新CSS变量
+      // 更新CSS变量（排除解读本页按钮和模型选择框）
       document.documentElement.style.setProperty('--llm-reader-base-font-size', currentFontSize + 'px');
       document.documentElement.style.setProperty('--llm-reader-title-font-size', (currentFontSize + 1) + 'px');
       document.documentElement.style.setProperty('--llm-reader-input-font-size', currentFontSize + 'px');
@@ -1300,6 +1318,11 @@ if (!window.__llm_reader_overlay_injected__) {
       document.documentElement.style.setProperty('--llm-reader-select-font-size', (currentFontSize - 1) + 'px');
       document.documentElement.style.setProperty('--llm-reader-close-font-size', currentFontSize + 'px');
       document.documentElement.style.setProperty('--llm-reader-role-font-size', (currentFontSize - 1) + 'px');
+      
+      // 保持解读本页按钮、模型选择框和用户输入框字体大小不变
+      document.documentElement.style.setProperty('--llm-reader-analyze-btn-font-size', '13px');
+      document.documentElement.style.setProperty('--llm-reader-profile-select-font-size', '13px');
+      document.documentElement.style.setProperty('--llm-reader-user-input-font-size', '13px');
       
       // 更新按钮状态
       decreaseFontSizeBtn.disabled = currentFontSize <= MIN_FONT_SIZE;
@@ -1326,6 +1349,11 @@ if (!window.__llm_reader_overlay_injected__) {
         console.error('加载文字大小设置失败:', e);
         updateFontSize(currentFontSize); // 使用默认值
       }
+      
+      // 确保解读本页按钮、模型选择框和用户输入框字体大小始终固定
+      document.documentElement.style.setProperty('--llm-reader-analyze-btn-font-size', '13px');
+      document.documentElement.style.setProperty('--llm-reader-profile-select-font-size', '13px');
+      document.documentElement.style.setProperty('--llm-reader-user-input-font-size', '13px');
     }
 
     function setStatus(text, isError = false) {
@@ -1607,7 +1635,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
     // 面板缩放逻辑
     (function initResize() {
-      const minWidth = 260;
+      const minWidth = 420;
       const maxWidth = Math.min(window.innerWidth * 0.9, 1000);
       const minHeight = 220;
       const maxHeight = 800;
@@ -2395,6 +2423,9 @@ ${bodyText}`,
         <option value="ja-JP">日本語</option>
         <option value="de-DE">Deutsch</option>
         <option value="fr-FR">Français</option>
+        <option value="ru-RU">Русский</option>
+        <option value="es-ES">Español</option>
+        <option value="ko-KR">한국어</option>
       `;
       langSelect.value = currentLang;
 
@@ -2793,9 +2824,15 @@ ${bodyText}`,
         const validHistory = messages.filter(msg => msg.role !== 'system' && msg.content.trim());
         if (validHistory.length === 0) return;
 
+        const now = new Date();
         const historyItem = {
           id: Date.now().toString(36) + '_' + Math.random().toString(16).slice(2, 8),
           timestamp: Date.now(),
+          // 添加详细的年月日时间信息
+          date_string: now.toLocaleDateString('zh-CN'), // 如：2024/12/13
+          time_string: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }), // 如：14:30
+          datetime_string: now.toLocaleString('zh-CN'), // 如：2024/12/13 14:30:00
+          iso_string: now.toISOString(), // ISO格式：2024-12-13T06:30:00.000Z
           url: window.location.href,
           title: document.title || '未知页面',
           messages: messages,
@@ -2971,7 +3008,14 @@ ${bodyText}`,
 
         const dateEl = document.createElement("div");
         dateEl.className = "llm-reader-history-item-date";
-        dateEl.textContent = formatDate(item.timestamp);
+        // 优先使用新的详细时间信息，如果没有则回退到原来的格式化函数
+        if (item.datetime_string) {
+          dateEl.textContent = item.datetime_string;
+        } else {
+          dateEl.textContent = formatDate(item.timestamp);
+        }
+        // 添加title属性，鼠标悬停时显示完整的ISO时间
+        dateEl.title = item.iso_string || new Date(item.timestamp).toISOString();
 
         headerEl.appendChild(titleEl);
         headerEl.appendChild(dateEl);
@@ -3029,14 +3073,27 @@ ${bodyText}`,
         const diffMs = now - date;
         const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
+        // 获取年月日信息
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const time = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        
+        // 构建完整的年月日时间字符串
+        const fullDateTime = `${year}-${month}-${day} ${time}`;
+
         if (diffDays === 0) {
-          return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+          // 今天：显示时间 + 完整日期
+          return `${time} (${year}-${month}-${day})`;
         } else if (diffDays === 1) {
-          return t("history_yesterday", currentLang);
+          // 昨天：显示昨天 + 完整日期
+          return `${t("history_yesterday", currentLang)} (${year}-${month}-${day})`;
         } else if (diffDays < 7) {
-          return `${diffDays} ${t("history_days_ago", currentLang)}`;
+          // 一周内：显示天数前 + 完整日期
+          return `${diffDays} ${t("history_days_ago", currentLang)} (${year}-${month}-${day})`;
         } else {
-          return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+          // 更久之前：显示完整月日 + 年份
+          return `${year}-${month}-${day} ${time}`;
         }
       }
 
