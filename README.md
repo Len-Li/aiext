@@ -95,6 +95,6 @@ Content-Type: application/json
   - 不会上传到本扩展作者的任何服务器
 - 网页内容会被发送到你配置的 LLM 接口，请确保你信任自己的后端服务，并在隐私敏感页面谨慎使用。
 
-## 作者
+## Author
 
-李乐恒
+Len Li
