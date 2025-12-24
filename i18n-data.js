@@ -30,6 +30,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "调用失败：",
     "overlay_ask_analyze": "请帮我解读当前网页内容。",
     "overlay_history_btn": "历史记录",
+    "overlay_panel_centered": "面板已居中",
     
     // History panel
     "history_title": "对话历史记录",
@@ -111,6 +112,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "Call failed: ",
     "overlay_ask_analyze": "Please help me understand this page.",
     "overlay_history_btn": "History",
+    "overlay_panel_centered": "Panel centered",
     
     // History panel
     "history_title": "Chat History",
@@ -192,6 +194,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "呼び出し失敗：",
     "overlay_ask_analyze": "現在のページ内容を解説してください。",
     "overlay_history_btn": "履歴",
+    "overlay_panel_centered": "パネルを中央に表示",
     
     // 履歴パネル
     "history_title": "チャット履歴",
@@ -273,6 +276,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "Ошибка вызова: ",
     "overlay_ask_analyze": "Помогите мне понять эту страницу.",
     "overlay_history_btn": "История",
+    "overlay_panel_centered": "Панель центрирована",
     
     // History panel
     "history_title": "История чата",
@@ -354,6 +358,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "Aufruf fehlgeschlagen: ",
     "overlay_ask_analyze": "Bitte helfen Sie mir, diese Seite zu verstehen.",
     "overlay_history_btn": "Verlauf",
+    "overlay_panel_centered": "Panel zentriert",
     
     // History panel
     "history_title": "Chat-Verlauf",
@@ -435,6 +440,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "Échec de l'appel : ",
     "overlay_ask_analyze": "Veuillez m'aider à comprendre cette page.",
     "overlay_history_btn": "Historique",
+    "overlay_panel_centered": "Panneau centré",
     
     // History panel
     "history_title": "Historique des discussions",
@@ -516,6 +522,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "Llamada fallida: ",
     "overlay_ask_analyze": "Por favor ayúdame a entender esta página.",
     "overlay_history_btn": "Historial",
+    "overlay_panel_centered": "Panel centrado",
     
     // Panel de historial
     "history_title": "Historial de Chat",
@@ -597,6 +604,7 @@ window.__llm_reader_translations__ = {
     "overlay_call_fail": "호출 실패: ",
     "overlay_ask_analyze": "현재 페이지 내용을 해석해주세요.",
     "overlay_history_btn": "기록",
+    "overlay_panel_centered": "패널이 중앙에 배치됨",
     
     // 기록 패널
     "history_title": "대화 기록",

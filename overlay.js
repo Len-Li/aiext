@@ -1300,6 +1300,75 @@ if (!window.__llm_reader_overlay_injected__) {
     let currentQaIndex = -1; // 当前显示的问答索引，-1表示显示全部
     let qaPairs = []; // 问答对数组
 
+    // 双击快捷键相关变量
+    let lastKeyPress = null;
+    let lastKeyTime = 0;
+    const DOUBLE_KEY_INTERVAL = 500; // 双击时间间隔（毫秒）
+
+    // 切换面板显示
+    function togglePanel() {
+      panel.style.display = panel.style.display === "none" ? "flex" : "none";
+    }
+
+    // 将面板居中
+    function centerPanel() {
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const panelRect = panel.getBoundingClientRect();
+      const panelWidth = panelRect.width || 420; // 默认宽度
+      const panelHeight = panelRect.height || 600; // 默认高度
+      
+      const newLeft = Math.max(0, (viewportWidth - panelWidth) / 2);
+      const newTop = Math.max(0, (viewportHeight - panelHeight) / 2);
+      
+      // 设置为绝对定位并居中
+      hasCustomPos = true;
+      panel.style.transform = "none";
+      panel.style.left = newLeft + "px";
+      panel.style.top = newTop + "px";
+      panel.style.right = "auto";
+      panel.style.bottom = "auto";
+      
+      // 显示状态提示
+      setStatus(t("overlay_panel_centered", currentLang) || "面板已居中");
+      setTimeout(() => setStatus(""), 1500);
+    }
+
+    // 初始化双击快捷键监听
+    function initDoubleKeyListener() {
+      document.addEventListener("keydown", (e) => {
+        // 如果用户在输入框中打字，不触发快捷键
+        if (e.target === input || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") {
+          return;
+        }
+        
+        const currentTime = Date.now();
+        const key = e.key.toLowerCase();
+        
+        // 检查是否是双击 b 或 v
+        if (key === lastKeyPress && (currentTime - lastKeyTime) < DOUBLE_KEY_INTERVAL) {
+          if (key === "b") {
+            // 双击 b：弹出/隐藏聊天框
+            togglePanel();
+            e.preventDefault();
+          } else if (key === "v") {
+            // 双击 v：居中聊天框
+            if (panel.style.display !== "none") {
+              centerPanel();
+              e.preventDefault();
+            }
+          }
+          // 重置，避免三次按键触发
+          lastKeyPress = null;
+          lastKeyTime = 0;
+        } else {
+          // 记录这次按键
+          lastKeyPress = key;
+          lastKeyTime = currentTime;
+        }
+      });
+    }
+
     function updateFontSize(newSize) {
       // 确保文字大小在允许范围内
       newSize = Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, newSize));
@@ -1359,6 +1428,7 @@ if (!window.__llm_reader_overlay_injected__) {
     function setStatus(text, isError = false) {
       status.textContent = text || "";
       status.style.color = isError ? "#f97373" : "#9ca3af";
+      status.style.fontSize = "13px"; // 与"解读本页"按钮字体大小一致
     }
 
     // 简单 Markdown 渲染（针对 LLM 返回内容，主要支持常见文本格式）
@@ -3210,6 +3280,7 @@ ${bodyText}`,
       updateUITexts();
       await loadProfiles();
       await loadFontSize();
+      initDoubleKeyListener(); // 初始化双击快捷键
     }
     
     init();
