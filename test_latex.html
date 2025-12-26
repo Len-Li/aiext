@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaTeX公式测试页面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #1a73e8;
+      padding-bottom: 10px;
+    }
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+    }
+    .test-title {
+      font-weight: bold;
+      color: #1a73e8;
+      margin-bottom: 10px;
+    }
+    .test-content {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>LaTeX公式渲染测试</h1>
+  
+  <div class="test-section">
+    <div class="test-title">测试1: 简单的行内公式</div>
+    <div class="test-content">
+      <p>爱因斯坦的质能方程：$E = mc^2$</p>
+      <p>勾股定理：$a^2 + b^2 = c^2$</p>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">测试2: 块级公式</div>
+    <div class="test-content">
+      <p>二次方程求根公式：</p>
+      $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">测试3: 分数显示</div>
+    <div class="test-content">
+      <p>简单分数：$\frac{1}{2}$，$\frac{3}{4}$，$\frac{a}{b}$</p>
+      <p>复杂分数：</p>
+      $$\frac{x^2 + 2x + 1}{x^2 - 1} = \frac{(x+1)^2}{(x+1)(x-1)}$$
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">测试4: 代码块</div>
+    <div class="test-content">
+      <p>JavaScript代码示例：</p>
+      <pre><code>```javascript
+function hello() {
+  console.log("Hello, World!");
+  return 42;
+}
+```</code></pre>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">测试5: 混合内容</div>
+    <div class="test-content">
+      <p>在文本中使用公式 $f(x) = x^2 + 2x + 1$ 和代码 <code>const x = 10;</code></p>
+      <p>积分公式：</p>
+      $$\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}$$
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">说明</div>
+    <div class="test-content">
+      <p>请在此页面上点击浏览器扩展的LLM按钮，然后在聊天框中输入包含LaTeX公式的文本来测试渲染效果。</p>
+      <p>例如，您可以输入：</p>
+      <ul>
+        <li>行内公式：<code>质能方程 $E = mc^2$ 很重要</code></li>
+        <li>块级公式：<code>$$\frac{1}{2}$$</code></li>
+        <li>复杂公式：<code>$$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$</code></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

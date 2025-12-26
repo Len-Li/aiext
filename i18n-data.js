@@ -8,6 +8,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "解读本页",
     "overlay_settings_btn": "设置",
     "overlay_send_btn": "发送",
+    "overlay_pause_btn": "暂停",
     "overlay_input_placeholder": "继续就当前网页提问，回车发送…",
     "overlay_decrease_font": "减小文字大小",
     "overlay_increase_font": "增大文字大小",
@@ -31,6 +32,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "请帮我解读当前网页内容。",
     "overlay_history_btn": "历史记录",
     "overlay_panel_centered": "面板已居中",
+    "overlay_paused": "已暂停",
     
     // History panel
     "history_title": "对话历史记录",
@@ -90,6 +92,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "Analyze Page",
     "overlay_settings_btn": "Settings",
     "overlay_send_btn": "Send",
+    "overlay_pause_btn": "Pause",
     "overlay_input_placeholder": "Ask about this page, press Enter to send...",
     "overlay_decrease_font": "Decrease font size",
     "overlay_increase_font": "Increase font size",
@@ -113,6 +116,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "Please help me understand this page.",
     "overlay_history_btn": "History",
     "overlay_panel_centered": "Panel centered",
+    "overlay_paused": "Paused",
     
     // History panel
     "history_title": "Chat History",
@@ -172,6 +176,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "このページを解説",
     "overlay_settings_btn": "設定",
     "overlay_send_btn": "送信",
+    "overlay_pause_btn": "一時停止",
     "overlay_input_placeholder": "現在のページについて質問、Enterで送信…",
     "overlay_decrease_font": "文字サイズを小さく",
     "overlay_increase_font": "文字サイズを大きく",
@@ -195,6 +200,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "現在のページ内容を解説してください。",
     "overlay_history_btn": "履歴",
     "overlay_panel_centered": "パネルを中央に表示",
+    "overlay_paused": "一時停止されました",
     
     // 履歴パネル
     "history_title": "チャット履歴",
@@ -254,6 +260,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "Анализировать страницу",
     "overlay_settings_btn": "Настройки",
     "overlay_send_btn": "Отправить",
+    "overlay_pause_btn": "Пауза",
     "overlay_input_placeholder": "Задайте вопрос об этой странице, нажмите Enter для отправки...",
     "overlay_decrease_font": "Уменьшить размер шрифта",
     "overlay_increase_font": "Увеличить размер шрифта",
@@ -277,6 +284,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "Помогите мне понять эту страницу.",
     "overlay_history_btn": "История",
     "overlay_panel_centered": "Панель центрирована",
+    "overlay_paused": "Приостановлено",
     
     // History panel
     "history_title": "История чата",
@@ -336,6 +344,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "Seite analysieren",
     "overlay_settings_btn": "Einstellungen",
     "overlay_send_btn": "Senden",
+    "overlay_pause_btn": "Pause",
     "overlay_input_placeholder": "Frage zu dieser Seite, Enter zum Senden...",
     "overlay_decrease_font": "Schriftgröße verkleinern",
     "overlay_increase_font": "Schriftgröße vergrößern",
@@ -359,6 +368,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "Bitte helfen Sie mir, diese Seite zu verstehen.",
     "overlay_history_btn": "Verlauf",
     "overlay_panel_centered": "Panel zentriert",
+    "overlay_paused": "Pausiert",
     
     // History panel
     "history_title": "Chat-Verlauf",
@@ -418,6 +428,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "Analyser la page",
     "overlay_settings_btn": "Paramètres",
     "overlay_send_btn": "Envoyer",
+    "overlay_pause_btn": "Pause",
     "overlay_input_placeholder": "Posez une question sur cette page, appuyez sur Entrée pour envoyer...",
     "overlay_decrease_font": "Réduire la taille de police",
     "overlay_increase_font": "Augmenter la taille de police",
@@ -441,6 +452,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "Veuillez m'aider à comprendre cette page.",
     "overlay_history_btn": "Historique",
     "overlay_panel_centered": "Panneau centré",
+    "overlay_paused": "En pause",
     
     // History panel
     "history_title": "Historique des discussions",
@@ -500,6 +512,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "Analizar Página",
     "overlay_settings_btn": "Configuración",
     "overlay_send_btn": "Enviar",
+    "overlay_pause_btn": "Pausar",
     "overlay_input_placeholder": "Pregunta sobre esta página, presiona Enter para enviar...",
     "overlay_decrease_font": "Disminuir tamaño de fuente",
     "overlay_increase_font": "Aumentar tamaño de fuente",
@@ -523,6 +536,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "Por favor ayúdame a entender esta página.",
     "overlay_history_btn": "Historial",
     "overlay_panel_centered": "Panel centrado",
+    "overlay_paused": "Pausado",
     
     // Panel de historial
     "history_title": "Historial de Chat",
@@ -582,6 +596,7 @@ window.__llm_reader_translations__ = {
     "overlay_analyze_btn": "페이지 해석",
     "overlay_settings_btn": "설정",
     "overlay_send_btn": "전송",
+    "overlay_pause_btn": "일시정지",
     "overlay_input_placeholder": "현재 페이지에 대해 질문하기, Enter로 전송...",
     "overlay_decrease_font": "글자 크기 줄이기",
     "overlay_increase_font": "글자 크기 키우기",
@@ -605,6 +620,7 @@ window.__llm_reader_translations__ = {
     "overlay_ask_analyze": "현재 페이지 내용을 해석해주세요.",
     "overlay_history_btn": "기록",
     "overlay_panel_centered": "패널이 중앙에 배치됨",
+    "overlay_paused": "일시정지됨",
     
     // 기록 패널
     "history_title": "대화 기록",

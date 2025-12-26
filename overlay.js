@@ -3,6 +3,62 @@
 // 防止重复注入
 if (!window.__llm_reader_overlay_injected__) {
   window.__llm_reader_overlay_injected__ = true;
+  
+  // 加载KaTeX CSS和JS
+  const librariesLoaded = {
+    katex: false,
+    highlight: false
+  };
+  
+  (function loadLibraries() {
+    // 加载KaTeX CSS
+    if (!document.querySelector('link[href*="katex.min.css"]')) {
+      const katexCSS = document.createElement('link');
+      katexCSS.rel = 'stylesheet';
+      katexCSS.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css';
+      document.head.appendChild(katexCSS);
+    }
+    
+    // 加载KaTeX JS（不使用defer，确保同步加载）
+    if (!document.querySelector('script[src*="katex.min.js"]')) {
+      const katexScript = document.createElement('script');
+      katexScript.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js';
+      katexScript.onload = () => {
+        librariesLoaded.katex = true;
+        console.log('KaTeX库加载成功');
+      };
+      katexScript.onerror = () => {
+        console.error('KaTeX库加载失败');
+      };
+      document.head.appendChild(katexScript);
+    } else {
+      librariesLoaded.katex = true;
+    }
+    
+    // 加载highlight.js CSS - VSCode风格
+    if (!document.querySelector('link[href*="vscode.min.css"]')) {
+      const highlightCSS = document.createElement('link');
+      highlightCSS.rel = 'stylesheet';
+      highlightCSS.href = 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/vscode.min.css';
+      document.head.appendChild(highlightCSS);
+    }
+    
+    // 加载highlight.js JS
+    if (!document.querySelector('script[src*="highlight.min.js"]')) {
+      const highlightScript = document.createElement('script');
+      highlightScript.src = 'https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/common.min.js';
+      highlightScript.onload = () => {
+        librariesLoaded.highlight = true;
+        console.log('highlight.js库加载成功');
+      };
+      highlightScript.onerror = () => {
+        console.error('highlight.js库加载失败');
+      };
+      document.head.appendChild(highlightScript);
+    } else {
+      librariesLoaded.highlight = true;
+    }
+  })();
 
   const STYLE_ID = "__llm_reader_overlay_style__";
   
@@ -353,6 +409,215 @@ if (!window.__llm_reader_overlay_injected__) {
       .llm-reader-chat-bubble h6 {
         font-size: 1em;
       }
+      
+      /* LaTeX 公式样式 - LaTeX风格 */
+      .llm-reader-chat-bubble .katex {
+        font-size: 1.15em;
+        color: #000000;
+        line-height: 1.8;
+      }
+      
+      .llm-reader-chat-bubble .katex-display {
+        margin: 16px 0;
+        padding: 16px 20px;
+        text-align: center;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-size: 1.25em;
+      }
+      
+      .llm-reader-chat-bubble .katex-inline {
+        background: #ffffff;
+        padding: 3px 5px;
+        border-radius: 3px;
+        border: 1px solid #f0f0f0;
+        vertical-align: middle;
+      }
+      
+      /* 分数样式优化 */
+      .llm-reader-chat-bubble .katex .frac {
+        vertical-align: middle;
+      }
+      
+      .llm-reader-chat-bubble .katex .frac .frac-line {
+        border-bottom-width: 0.06em;
+        margin: 0.1em 0;
+      }
+      
+      .llm-reader-chat-bubble .katex .mfrac {
+        vertical-align: 0.5em;
+      }
+      
+      .llm-reader-chat-bubble .katex .mfrac > span {
+        font-size: 1em;
+      }
+      
+      .llm-reader-chat-bubble .latex-fallback,
+      .llm-reader-chat-bubble .latex-error {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 8px;
+        font-family: 'Computer Modern', 'Latin Modern Math', 'KaTeX_Math', serif;
+        font-size: 0.9em;
+        color: #000000;
+        overflow-x: auto;
+        margin: 4px 0;
+      }
+      
+      .llm-reader-chat-bubble .latex-error {
+        border-color: #ff6b6b;
+        background: #ffe6e6;
+        color: #d63031;
+      }
+      
+      /* KaTeX数学字体优化 */
+      .llm-reader-chat-bubble .katex {
+        font-family: 'KaTeX_Main', 'Computer Modern Roman', 'Latin Modern Math', 'Times New Roman', serif !important;
+      }
+      
+      .llm-reader-chat-bubble .katex .mord,
+      .llm-reader-chat-bubble .katex .mop,
+      .llm-reader-chat-bubble .katex .mib,
+      .llm-reader-chat-bubble .katex .mrel,
+      .llm-reader-chat-bubble .katex .mopen,
+      .llm-reader-chat-bubble .katex .mclose,
+      .llm-reader-chat-bubble .katex .mpunct,
+      .llm-reader-chat-bubble .katex .mord+.mop {
+        color: #000000 !important;
+      }
+      
+      /* LaTeX符号样式 */
+      .llm-reader-chat-bubble .katex .frac-line,
+      .llm-reader-chat-bubble .katex .sqrt-line,
+      .llm-reader-chat-bubble .katex .rule {
+        border-color: #000000 !important;
+      }
+      
+      /* LaTeX定界符样式 */
+      .llm-reader-chat-bubble .katex .delimsizing-size1,
+      .llm-reader-chat-bubble .katex .delimsizing-size2,
+      .llm-reader-chat-bubble .katex .delimsizing-size3,
+      .llm-reader-chat-bubble .katex .delimsizing-size4 {
+        color: #000000 !important;
+      }
+      
+      /* 确保所有KaTeX元素都使用黑色 */
+      .llm-reader-chat-bubble .katex * {
+        color: #000000 !important;
+      }
+      
+      .llm-reader-chat-bubble .katex .base {
+        color: #000000 !important;
+      }
+      
+      .llm-reader-chat-bubble .katex .accent-body,
+      .llm-reader-chat-bubble .katex .accent-body1,
+      .llm-reader-chat-bubble .katex .accent-body2 {
+        color: #000000 !important;
+      }
+      
+      .llm-reader-chat-bubble .katex .mord.tns,
+      .llm-reader-chat-bubble .katex .mord.phantom,
+      .llm-reader-chat-bubble .katex .mord.angl {
+        color: #000000 !important;
+      }
+      
+      /* VSCode风格的代码块样式 */
+      .llm-reader-chat-bubble pre {
+        background: #1e1e1e;
+        border: 1px solid #3c3c3c;
+        border-radius: 4px;
+        padding: 12px;
+        margin: 8px 0;
+        overflow-x: auto;
+        font-family: Consolas, 'Courier New', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+        font-size: 13px;
+        line-height: 1.4;
+        color: #d4d4d4;
+      }
+      
+      .llm-reader-chat-bubble pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: inherit;
+        font-family: inherit;
+        color: inherit;
+      }
+      
+      .llm-reader-chat-bubble code {
+        background: #1e1e1e;
+        border: 1px solid #3c3c3c;
+        border-radius: 3px;
+        padding: 2px 6px;
+        font-family: Consolas, 'Courier New', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+        font-size: 12px;
+        color: #9cdcfe;
+      }
+      
+      /* VSCode风格的语法高亮覆盖 */
+      .llm-reader-chat-bubble .hljs {
+        background: #1e1e1e !important;
+        color: #d4d4d4 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-keyword {
+        color: #569cd6 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-string {
+        color: #ce9178 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-number {
+        color: #b5cea8 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-comment {
+        color: #6a9955 !important;
+        font-style: italic;
+      }
+      
+      .llm-reader-chat-bubble .hljs-function {
+        color: #dcdcaa !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-variable {
+        color: #9cdcfe !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-operator {
+        color: #d4d4d4 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-class {
+        color: #4ec9b0 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-property {
+        color: #9cdcfe !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-tag {
+        color: #569cd6 !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-attr {
+        color: #9cdcfe !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-title {
+        color: #dcdcaa !important;
+      }
+      
+      .llm-reader-chat-bubble .hljs-params {
+        color: #9cdcfe !important;
+      }
 
       .llm-reader-chat-bubble-user {
         background: #e8f0fe;
@@ -452,6 +717,33 @@ if (!window.__llm_reader_overlay_injected__) {
       }
 
       .llm-reader-send-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+        box-shadow: none;
+      }
+
+      .llm-reader-pause-btn {
+        border-radius: 999px;
+        padding: 4px 8px;
+        border: none;
+        background: #d93025;
+        color: #ffffff;
+        font-size: 11px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        white-space: nowrap;
+        min-width: 15px;
+        box-sizing: border-box;
+      }
+
+      .llm-reader-pause-btn:hover {
+        background: #b6281e;
+      }
+
+      .llm-reader-pause-btn:disabled {
         opacity: 0.6;
         cursor: default;
         box-shadow: none;
@@ -1215,6 +1507,11 @@ if (!window.__llm_reader_overlay_injected__) {
     sendBtn.className = "llm-reader-send-btn";
     sendBtn.textContent = t("overlay_send_btn", currentLang);
 
+    const pauseBtn = document.createElement("button");
+    pauseBtn.className = "llm-reader-pause-btn";
+    pauseBtn.textContent = t("overlay_pause_btn", currentLang);
+    pauseBtn.style.display = "none"; // 默认隐藏，只有流式时才显示
+
     const resizeCornerBR = document.createElement("div");
     resizeCornerBR.className = "llm-reader-resize-handle";
 
@@ -1244,6 +1541,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
     inputRow.appendChild(input);
     inputRow.appendChild(sendBtn);
+    inputRow.appendChild(pauseBtn);
 
     body.appendChild(status);
     body.appendChild(chatList);
@@ -1271,6 +1569,10 @@ if (!window.__llm_reader_overlay_injected__) {
     let dragStartTop = 0;
     let dragStartLeft = 0;
     let hasCustomPos = false;
+    
+    // 暂停功能相关变量
+    let currentAbortController = null;
+    let isPaused = false;
     
     // 滚动控制相关变量
     let shouldAutoScroll = false; // 是否应该自动滚动（只有用户手动滚动到底部时才为true）
@@ -1431,7 +1733,7 @@ if (!window.__llm_reader_overlay_injected__) {
       status.style.fontSize = "13px"; // 与"解读本页"按钮字体大小一致
     }
 
-    // 简单 Markdown 渲染（针对 LLM 返回内容，主要支持常见文本格式）
+    // 增强的 Markdown 渲染（支持 LaTeX 公式和代码高亮）
     function escapeHtml(str) {
       return str
         .replace(/&/g, "&amp;")
@@ -1441,65 +1743,200 @@ if (!window.__llm_reader_overlay_injected__) {
         .replace(/'/g, "&#39;");
     }
 
+    // 渲染LaTeX公式的辅助函数
+    function renderLatex(text, displayMode = false) {
+      try {
+        if (typeof window.katex !== 'undefined' && window.katex) {
+          const rendered = window.katex.renderToString(text, {
+            displayMode: displayMode,
+            throwOnError: false,
+            output: 'html',
+            strict: 'warn',
+            trust: false,
+            fleqn: false,
+            minRuleThickness: 0.06,
+            maxSize: Infinity,
+            maxExpand: 1000,
+            macros: {
+              "\\f": "#1f(#2)",
+            }
+          });
+          
+          // 为行内公式添加包装类
+          if (!displayMode) {
+            return `<span class="katex-inline">${rendered}</span>`;
+          }
+          return rendered;
+        } else {
+          // 如果KaTeX未加载，显示原始LaTeX文本
+          console.warn('KaTeX库未加载，显示原始LaTeX:', text);
+          return `<pre class="latex-fallback">${escapeHtml(text)}</pre>`;
+        }
+      } catch (e) {
+        console.warn('LaTeX渲染失败:', e, text);
+        return `<pre class="latex-error">${escapeHtml(text)}</pre>`;
+      }
+    }
+
+    // 渲染代码块的辅助函数
+    function renderCodeBlock(code, language = '') {
+      try {
+        if (window.hljs) {
+          // 尝试检测语言
+          let lang = language.toLowerCase().trim();
+          if (!lang || lang === 'text' || lang === 'plain') {
+            const result = window.hljs.highlightAuto(code);
+            return `<pre><code class="hljs">${result.value}</code></pre>`;
+          }
+          
+          // 尝试使用指定语言高亮
+          try {
+            const result = window.hljs.highlight(code, { language: lang });
+            return `<pre><code class="hljs language-${lang}">${result.value}</code></pre>`;
+          } catch (e) {
+            // 如果指定语言失败，自动检测
+            const result = window.hljs.highlightAuto(code);
+            return `<pre><code class="hljs">${result.value}</code></pre>`;
+          }
+        } else {
+          // 如果highlight.js未加载，显示原始代码
+          return `<pre><code>${escapeHtml(code)}</code></pre>`;
+        }
+      } catch (e) {
+        console.warn('代码高亮失败:', e);
+        return `<pre><code>${escapeHtml(code)}</code></pre>`;
+      }
+    }
+
     function markdownToHtml(md) {
       if (!md) return "";
 
-      // 先处理代码块 ``` ```，保留换行
+      // 临时存储LaTeX公式和代码块
+      const latexBlocks = [];
+      const codeBlocks = [];
+      
+      // 先处理代码块，避免代码块中的$符号被误识别为LaTeX
       const parts = md.split(/```/);
-      let html = "";
+      let processedMd = "";
+      
       parts.forEach((part, index) => {
         if (index % 2 === 1) {
-          // 代码块
-          html +=
-            "<pre><code>" + escapeHtml(part.replace(/^\s+|\s+$/g, "")) + "</code></pre>";
-        } else {
-          // 普通文本部分做简单 markdown 处理
-          let text = escapeHtml(part);
+          // 代码块 - 直接保存，不处理LaTeX
+          const lines = part.split('\n');
+          let language = '';
+          let code = part;
           
-          // 按行处理，更精确地控制标题和换行
-          const lines = text.split('\n');
-          const processedLines = [];
-          
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            // 检查是否是标题行
-            const titleMatch = line.match(/^\s*(#{1,6})\s+(.+?)\s*$/);
-            if (titleMatch) {
-              const level = titleMatch[1].length;
-              const content = titleMatch[2];
-              processedLines.push(`<h${level}>${content}</h${level}>`);
-            } else {
-              // 非标题行，保留原样（后续会处理换行）
-              processedLines.push(line);
-            }
+          // 检查第一行是否为语言标识符
+          if (lines.length > 1 && /^[a-zA-Z0-9_-]+$/.test(lines[0].trim())) {
+            language = lines[0].trim();
+            code = lines.slice(1).join('\n');
           }
           
-          text = processedLines.join('\n');
+          code = code.replace(/^\s+|\s+$/g, "");
+          const codeIndex = codeBlocks.length;
+          codeBlocks.push({ code: code, language: language });
+          processedMd += `__CODE_BLOCK_${codeIndex}__`;
+        } else {
+          // 非代码块部分 - 提取LaTeX公式
+          let text = part;
           
-          // 粗体 **text**
-          text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-          // 行内代码 `code`
-          text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
-          // 无序列表 - / * 开头的行（转成前缀符号）
-          text = text.replace(
-            /(^|\n)[\-\*]\s+(.+?)(?=\n|$)/g,
-            (_, p1, p2) => `${p1}• ${p2}`
-          );
-          // 网址自动变链接（简单判断）
-          text = text.replace(
-            /(https?:\/\/[^\s]+)/g,
-            '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-          );
+          // 提取LaTeX公式（块级） - 必须在行内公式之前处理
+          text = text.replace(/\$\$([\s\S]*?)\$\$/g, (match, content) => {
+            const index = latexBlocks.length;
+            latexBlocks.push({ content: content.trim(), displayMode: true });
+            return `__LATEX_BLOCK_${index}__`;
+          });
           
-          // 换行处理：标题标签是块级元素，前后不需要 <br>
-          // 移除标题前后的换行符
-          text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
-          text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)/g, '$1');
-          text = text.replace(/(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
-          // 处理剩余的换行
-          text = text.replace(/\n/g, "<br>");
-          html += text;
+          // 提取LaTeX公式（行内）
+          text = text.replace(/\$([^\$\n]+?)\$/g, (match, content) => {
+            const index = latexBlocks.length;
+            latexBlocks.push({ content: content.trim(), displayMode: false });
+            return `__LATEX_INLINE_${index}__`;
+          });
+          
+          processedMd += text;
         }
+      });
+      
+      // 现在处理Markdown语法
+      let html = "";
+      const textParts = processedMd.split(/(__CODE_BLOCK_\d+__|__LATEX_BLOCK_\d+__|__LATEX_INLINE_\d+__)/);
+      
+      textParts.forEach(part => {
+        // 如果是占位符，直接保留
+        if (part.match(/^__(?:CODE_BLOCK|LATEX_BLOCK|LATEX_INLINE)_\d+__$/)) {
+          html += part;
+          return;
+        }
+        
+        // 普通文本部分做简单 markdown 处理
+        let text = escapeHtml(part);
+        
+        // 按行处理，更精确地控制标题和换行
+        const lines = text.split('\n');
+        const processedLines = [];
+        
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // 检查是否是标题行
+          const titleMatch = line.match(/^\s*(#{1,6})\s+(.+?)\s*$/);
+          if (titleMatch) {
+            const level = titleMatch[1].length;
+            const content = titleMatch[2];
+            processedLines.push(`<h${level}>${content}</h${level}>`);
+          } else {
+            // 非标题行，保留原样（后续会处理换行）
+            processedLines.push(line);
+          }
+        }
+        
+        text = processedLines.join('\n');
+        
+        // 粗体 **text**
+        text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        // 行内代码 `code` - 但要避免处理占位符
+        text = text.replace(/`([^`]+)`/g, (match, code) => {
+          if (code.match(/^__(?:CODE_BLOCK|LATEX_BLOCK|LATEX_INLINE)_\d+__$/)) {
+            return match; // 保留占位符
+          }
+          return `<code>${code}</code>`;
+        });
+        // 无序列表 - / * 开头的行（转成前缀符号）
+        text = text.replace(
+          /(^|\n)[\-\*]\s+(.+?)(?=\n|$)/g,
+          (_, p1, p2) => `${p1}• ${p2}`
+        );
+        // 网址自动变链接（简单判断）
+        text = text.replace(
+          /(https?:\/\/[^\s]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+        );
+        
+        // 换行处理：标题标签是块级元素，前后不需要 <br>
+        // 移除标题前后的换行符
+        text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
+        text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)/g, '$1');
+        text = text.replace(/(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
+        // 处理剩余的换行
+        text = text.replace(/\n/g, "<br>");
+        html += text;
+      });
+
+      // 替换回LaTeX公式
+      html = html.replace(/__LATEX_BLOCK_(\d+)__/g, (match, index) => {
+        const latex = latexBlocks[parseInt(index)];
+        return renderLatex(latex.content, true);
+      });
+      
+      html = html.replace(/__LATEX_INLINE_(\d+)__/g, (match, index) => {
+        const latex = latexBlocks[parseInt(index)];
+        return renderLatex(latex.content, false);
+      });
+      
+      // 替换回代码块
+      html = html.replace(/__CODE_BLOCK_(\d+)__/g, (match, index) => {
+        const codeBlock = codeBlocks[parseInt(index)];
+        return renderCodeBlock(codeBlock.code, codeBlock.language);
       });
 
       return html;
@@ -2160,6 +2597,9 @@ if (!window.__llm_reader_overlay_injected__) {
         stream: true,
       };
 
+      // 创建 AbortController 用于取消请求
+      currentAbortController = new AbortController();
+      
       const res = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -2167,6 +2607,7 @@ if (!window.__llm_reader_overlay_injected__) {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(body),
+        signal: currentAbortController.signal, // 添加 signal
       });
 
       if (!res.ok) {
@@ -2185,6 +2626,7 @@ if (!window.__llm_reader_overlay_injected__) {
           JSON.stringify(data || {});
         onDelta(full, full);
         onDone(full);
+        currentAbortController = null;
         return;
       }
 
@@ -2193,34 +2635,53 @@ if (!window.__llm_reader_overlay_injected__) {
       let buffer = "";
       let fullText = "";
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-        for (const raw of lines) {
-          const line = raw.trim();
-          if (!line || !line.startsWith("data:")) continue;
-          const dataStr = line.slice(5).trim();
-          if (dataStr === "[DONE]") {
-            onDone(fullText);
-            return;
+      try {
+        while (true) {
+          // 检查是否被暂停
+          if (isPaused) {
+            console.log("流式响应被暂停");
+            reader.cancel(); // 取消读取
+            break;
           }
-          try {
-            const json = JSON.parse(dataStr);
-            const delta =
-              json?.choices?.[0]?.delta?.content ||
-              json?.choices?.[0]?.text ||
-              "";
-            if (delta) {
-              fullText += delta;
-              onDelta(delta, fullText);
+          
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+          for (const raw of lines) {
+            const line = raw.trim();
+            if (!line || !line.startsWith("data:")) continue;
+            const dataStr = line.slice(5).trim();
+            if (dataStr === "[DONE]") {
+              onDone(fullText);
+              return;
             }
-          } catch (e) {
-            console.error("解析流式数据失败:", e, dataStr);
+            try {
+              const json = JSON.parse(dataStr);
+              const delta =
+                json?.choices?.[0]?.delta?.content ||
+                json?.choices?.[0]?.text ||
+                "";
+              if (delta) {
+                fullText += delta;
+                onDelta(delta, fullText);
+              }
+            } catch (e) {
+              console.error("解析流式数据失败:", e, dataStr);
+            }
           }
         }
+      } catch (error) {
+        // 处理 AbortError（取消错误）
+        if (error.name === 'AbortError') {
+          console.log("请求被取消");
+          onDone(fullText || "[响应已暂停]");
+        } else {
+          throw error;
+        }
+      } finally {
+        currentAbortController = null;
       }
 
       onDone(fullText);
@@ -2275,10 +2736,10 @@ if (!window.__llm_reader_overlay_injected__) {
 
     analyzeBtn.addEventListener("click", async () => {
       if (isStreaming) return;
-      isStreaming = true;
-      analyzeBtn.disabled = true;
-      sendBtn.disabled = true;
-      input.disabled = true;
+      
+      // 设置流式状态（显示暂停按钮）
+      setStreamingState(true);
+      
       chatList.innerHTML = "";
       messages = [];
       currentQaIndex = -1; // 重置导航索引
@@ -2332,10 +2793,8 @@ ${bodyText}`,
       } catch (e) {
         setStatus(t("overlay_call_fail", currentLang) + (e?.message || String(e)), true);
       } finally {
-        isStreaming = false;
-        analyzeBtn.disabled = false;
-        sendBtn.disabled = false;
-        input.disabled = false;
+        // 使用统一的流式状态设置函数（隐藏暂停按钮）
+        setStreamingState(false);
       }
     });
 
@@ -2390,6 +2849,24 @@ ${bodyText}`,
       sendBtn.disabled = streaming;
       analyzeBtn.disabled = streaming;
       input.disabled = streaming;
+      
+      // 显示/隐藏暂停按钮
+      if (streaming) {
+        pauseBtn.style.display = "inline-flex";
+        isPaused = false; // 重置暂停状态
+      } else {
+        pauseBtn.style.display = "none";
+      }
+    }
+
+    // 暂停功能
+    function pauseStreaming() {
+      if (currentAbortController && isStreaming) {
+        isPaused = true;
+        currentAbortController.abort(); // 取消请求
+        setStatus(t("overlay_paused", currentLang));
+        setTimeout(() => setStatus(""), 2000);
+      }
     }
 
     // 统一的助手回复处理函数
@@ -2409,6 +2886,10 @@ ${bodyText}`,
 
     sendBtn.addEventListener("click", () => {
       sendUserMessage();
+    });
+
+    pauseBtn.addEventListener("click", () => {
+      pauseStreaming();
     });
 
     input.addEventListener("keydown", (e) => {
@@ -2432,6 +2913,7 @@ ${bodyText}`,
       analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
       settingsBtn.title = t("overlay_settings_btn", currentLang);
       sendBtn.textContent = t("overlay_send_btn", currentLang);
+      pauseBtn.textContent = t("overlay_pause_btn", currentLang);
       input.placeholder = t("overlay_input_placeholder", currentLang);
       decreaseFontSizeBtn.title = t("overlay_decrease_font", currentLang);
       increaseFontSizeBtn.title = t("overlay_increase_font", currentLang);
