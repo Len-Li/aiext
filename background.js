@@ -35,6 +35,11 @@ function normalizeApiUrl(raw) {
   // 去掉末尾多余的斜杠，便于后续判断
   url = url.replace(/\/+$/, "");
 
+  // 智谱模型特殊处理：如果URL包含bigmodel.cn或zhipu，使用智谱专用API地址
+  if (url.includes("bigmodel.cn") || url.includes("zhipu")) {
+    return "https://open.bigmodel.cn/api/coding/paas/v4/chat/completions";
+  }
+
   // 尝试用 URL 解析，做通用 OpenAI-Compatible 规则：
   // - 只填到主机： https://api.xxx.com         → https://api.xxx.com/v1/chat/completions
   // - 填到 /v1：   https://api.xxx.com/v1      → https://api.xxx.com/v1/chat/completions
@@ -189,6 +194,13 @@ ${pageData.text || "（无正文内容）"}`,
     // 保持兼容性：有些 OpenAI-Compatible 服务要求显式指定
     stream: false,
   };
+
+  // 智谱模型特殊处理：关闭自动思考
+  if (apiUrl.includes("bigmodel.cn") || model.toLowerCase().startsWith("glm")) {
+    body.thinking = {
+      type: "disabled"
+    };
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时

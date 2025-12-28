@@ -2597,6 +2597,13 @@ if (!window.__llm_reader_overlay_injected__) {
         stream: true,
       };
 
+      // 智谱模型特殊处理：关闭自动思考
+      if (endpoint.includes("bigmodel.cn") || model.toLowerCase().startsWith("glm")) {
+        body.thinking = {
+          type: "disabled"
+        };
+      }
+
       // 创建 AbortController 用于取消请求
       currentAbortController = new AbortController();
       
