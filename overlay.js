@@ -373,8 +373,10 @@ if (!window.__llm_reader_overlay_injected__) {
         border-radius: 8px;
         border: 1px solid #e0e0e0;
         background: #ffffff;
-        white-space: pre-wrap;
+        white-space: normal;
+        word-wrap: break-word;
         word-break: break-word;
+        overflow-wrap: break-word;
         line-height: 1.6;
       }
 
