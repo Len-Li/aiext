@@ -37,7 +37,13 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["img/logo.png"],
+      "resources": [
+        "img/logo.png",
+        "vendor/pdfjs/package/build/pdf.mjs",
+        "vendor/pdfjs/package/build/pdf.worker.mjs",
+        "vendor/pdfjs/package/cmaps/*",
+        "vendor/pdfjs/package/standard_fonts/*"
+      ],
       "matches": ["<all_urls>"],
       "use_dynamic_url": true
     }

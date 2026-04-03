@@ -446,13 +446,20 @@ if (!window.__llm_reader_overlay_injected__) {
 
       .llm-reader-chat-bubble ul,
       .llm-reader-chat-bubble ol {
-        margin: 0.4em 0 0.85em 1.3em;
+        margin: 0.2em 0 0.65em 1.2em;
         padding: 0;
       }
 
       .llm-reader-chat-bubble li {
-        margin: 0.22em 0;
+        margin: 0.16em 0;
         padding-left: 0.1em;
+      }
+
+      .llm-reader-chat-bubble p + ul,
+      .llm-reader-chat-bubble p + ol,
+      .llm-reader-chat-bubble ul + p,
+      .llm-reader-chat-bubble ol + p {
+        margin-top: 0.15em;
       }
 
       .llm-reader-chat-bubble h1,
@@ -1956,7 +1963,9 @@ if (!window.__llm_reader_overlay_injected__) {
         if (!text) return "";
 
         let html = escapeHtml(text);
+        html = html.replace(/&lt;br\s*\/?&gt;/gi, "<br>");
         html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        html = html.replace(/(^|[^\*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>");
         html = html.replace(/`([^`]+)`/g, (match, code) => {
           if (code.match(/^__LATEX_INLINE_\d+__$/)) {
             return match;
@@ -2279,9 +2288,7 @@ if (!window.__llm_reader_overlay_injected__) {
     // 面板缩放逻辑
     (function initResize() {
       const minWidth = 420;
-      const maxWidth = Math.min(window.innerWidth * 0.9, 1000);
       const minHeight = 220;
-      const maxHeight = 800;
 
       let startX = 0;
       let startY = 0;
@@ -2296,6 +2303,14 @@ if (!window.__llm_reader_overlay_injected__) {
         if (!isResizing) return;
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const margin = 10;
+        const viewportMaxWidth = Math.max(minWidth, viewportWidth - margin * 2);
+        const viewportMaxHeight = Math.max(minHeight, viewportHeight - margin * 2);
+        // 关键：首次拖拽时允许保留当前尺寸，避免因为硬上限导致“一点就骤缩”。
+        const maxWidth = Math.max(startWidth, viewportMaxWidth);
+        const maxHeight = Math.max(startHeight, viewportMaxHeight);
 
         let newWidth = startWidth;
         let newHeight = startHeight;
@@ -2338,9 +2353,6 @@ if (!window.__llm_reader_overlay_injected__) {
 
         // 如果从左侧缩放，需要同时更新 left，保持右侧边缘固定
         if (isLeft) {
-          const viewportWidth =
-            window.innerWidth || document.documentElement.clientWidth;
-          const margin = 10;
           // 计算新的left位置：保持右侧边缘不变
           const actualDx = startWidth - newWidth; // 宽度变化量
           let newLeft = startLeft + actualDx;
@@ -2352,9 +2364,6 @@ if (!window.__llm_reader_overlay_injected__) {
 
         // 如果从顶部缩放，需要同时更新 top，保证面板不出屏幕
         if (isTop) {
-          const viewportHeight =
-            window.innerHeight || document.documentElement.clientHeight;
-          const margin = 10;
           let newTop = startTop + dy;
           const maxTop = viewportHeight - newHeight - margin;
           newTop = Math.max(margin, Math.min(maxTop, newTop));
