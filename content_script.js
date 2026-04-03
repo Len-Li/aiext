@@ -7,7 +7,7 @@ function getPageText() {
     // 简单清洗：去掉多余空白并截断长度，防止请求体过大
     text = text.replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 
-    const MAX_LEN = 8000;
+    const MAX_LEN = 8000000;
     if (text.length > MAX_LEN) {
       text = text.slice(0, MAX_LEN) + "\n\n[内容过长，已截断部分文本]";
     }
