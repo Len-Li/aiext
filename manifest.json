@@ -31,7 +31,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["utils.js", "i18n-data.js", "overlay.js"],
+      "js": ["utils.js", "i18n-data.js", "overlay-renderer.js", "overlay.js"],
       "run_at": "document_idle"
     }
   ],
