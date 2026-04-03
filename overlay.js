@@ -9,6 +9,54 @@ if (!window.__llm_reader_overlay_injected__) {
     katex: false,
     highlight: false
   };
+
+  function encodeLatexSource(text) {
+    return encodeURIComponent(text || "");
+  }
+
+  function decodeLatexSource(text) {
+    try {
+      return decodeURIComponent(text || "");
+    } catch {
+      return text || "";
+    }
+  }
+
+  function rerenderPendingMath(root = document) {
+    if (!window.katex) return;
+
+    const pendingNodes = root.querySelectorAll(".llm-reader-math-pending");
+    pendingNodes.forEach((node) => {
+      const source = decodeLatexSource(node.getAttribute("data-latex-source"));
+      const displayMode = node.getAttribute("data-display-mode") === "true";
+
+      try {
+        const rendered = window.katex.renderToString(source, {
+          displayMode,
+          throwOnError: false,
+          output: "html",
+          strict: "warn",
+          trust: false,
+          fleqn: false,
+          minRuleThickness: 0.06,
+          maxSize: Infinity,
+          maxExpand: 1000,
+          macros: {
+            "\\f": "#1f(#2)",
+          },
+        });
+
+        node.outerHTML = displayMode
+          ? `<div class="llm-reader-math-block">${rendered}</div>`
+          : `<span class="llm-reader-math-inline">${rendered}</span>`;
+      } catch (error) {
+        console.warn("延迟渲染 LaTeX 失败:", error, source);
+        node.classList.remove("llm-reader-math-pending");
+        node.classList.add("latex-error");
+        node.textContent = source;
+      }
+    });
+  }
   
   (function loadLibraries() {
     // 加载KaTeX CSS
@@ -26,6 +74,7 @@ if (!window.__llm_reader_overlay_injected__) {
       katexScript.onload = () => {
         librariesLoaded.katex = true;
         console.log('KaTeX库加载成功');
+        rerenderPendingMath(document);
       };
       katexScript.onerror = () => {
         console.error('KaTeX库加载失败');
@@ -33,6 +82,7 @@ if (!window.__llm_reader_overlay_injected__) {
       document.head.appendChild(katexScript);
     } else {
       librariesLoaded.katex = true;
+      queueMicrotask(() => rerenderPendingMath(document));
     }
     
     // 加载highlight.js CSS - VSCode风格
@@ -156,6 +206,12 @@ if (!window.__llm_reader_overlay_injected__) {
         overflow: hidden;
         color: #202124;
         font-family: Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .llm-reader-panel.llm-reader-panel-pdf {
+        width: min(46vw, 760px);
+        min-width: 560px;
+        right: 1.5%;
       }
 
       .llm-reader-panel-header {
@@ -380,6 +436,25 @@ if (!window.__llm_reader_overlay_injected__) {
         line-height: 1.6;
       }
 
+      .llm-reader-chat-bubble p {
+        margin: 0 0 0.7em;
+      }
+
+      .llm-reader-chat-bubble p:last-child {
+        margin-bottom: 0;
+      }
+
+      .llm-reader-chat-bubble ul,
+      .llm-reader-chat-bubble ol {
+        margin: 0.4em 0 0.85em 1.3em;
+        padding: 0;
+      }
+
+      .llm-reader-chat-bubble li {
+        margin: 0.22em 0;
+        padding-left: 0.1em;
+      }
+
       .llm-reader-chat-bubble h1,
       .llm-reader-chat-bubble h2,
       .llm-reader-chat-bubble h3,
@@ -412,119 +487,102 @@ if (!window.__llm_reader_overlay_injected__) {
         font-size: 1em;
       }
       
-      /* LaTeX 公式样式 - LaTeX风格 */
       .llm-reader-chat-bubble .katex {
-        font-size: 1.15em;
-        color: #000000;
-        line-height: 1.8;
+        font-size: 1.08em;
+        line-height: 1.2;
+        text-rendering: auto;
       }
-      
-      .llm-reader-chat-bubble .katex-display {
-        margin: 16px 0;
-        padding: 16px 20px;
-        text-align: center;
-        background: #ffffff;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        font-size: 1.25em;
+
+
+      .llm-reader-chat-bubble .llm-reader-math-inline {
+        display: inline-block;
+        max-width: 100%;
+        padding: 0.08em 0.2em;
+        margin: 0 0.08em;
+        border-radius: 4px;
+        vertical-align: -0.18em;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        scrollbar-width: thin;
       }
-      
-      .llm-reader-chat-bubble .katex-inline {
-        background: #ffffff;
-        padding: 3px 5px;
-        border-radius: 3px;
-        border: 1px solid #f0f0f0;
-        vertical-align: middle;
+
+      .llm-reader-chat-bubble .llm-reader-math-pending {
+        font-family: "KaTeX_Main", "Times New Roman", serif;
       }
-      
-      /* 分数样式优化 */
-      .llm-reader-chat-bubble .katex .frac {
-        vertical-align: middle;
+
+      .llm-reader-chat-bubble .llm-reader-math-inline::-webkit-scrollbar,
+      .llm-reader-chat-bubble .llm-reader-math-block::-webkit-scrollbar {
+        height: 6px;
       }
-      
-      .llm-reader-chat-bubble .katex .frac .frac-line {
-        border-bottom-width: 0.06em;
-        margin: 0.1em 0;
+
+      .llm-reader-chat-bubble .llm-reader-math-inline::-webkit-scrollbar-thumb,
+      .llm-reader-chat-bubble .llm-reader-math-block::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.55);
+        border-radius: 999px;
       }
-      
-      .llm-reader-chat-bubble .katex .mfrac {
-        vertical-align: 0.5em;
+
+      .llm-reader-chat-bubble .llm-reader-math-block {
+        display: block;
+        max-width: 100%;
+        margin: 0.95em 0;
+        padding: 0.9em 1em;
+        border: 1px solid #e6eaf0;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
+        overflow-x: auto;
+        overflow-y: hidden;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
       }
-      
-      .llm-reader-chat-bubble .katex .mfrac > span {
-        font-size: 1em;
+
+      .llm-reader-chat-bubble .llm-reader-math-block .katex-display {
+        margin: 0;
+        padding: 0;
+        overflow: visible hidden;
       }
-      
+
+      .llm-reader-chat-bubble .llm-reader-math-block .katex {
+        font-size: 1.16em;
+      }
+
       .llm-reader-chat-bubble .latex-fallback,
       .llm-reader-chat-bubble .latex-error {
-        background: #ffffff;
+        display: block;
+        margin: 0.95em 0;
+        padding: 0.75em 0.9em;
         border: 1px solid #e0e0e0;
-        border-radius: 4px;
-        padding: 8px;
+        border-radius: 8px;
+        background: #f8fafc;
         font-family: 'Computer Modern', 'Latin Modern Math', 'KaTeX_Math', serif;
-        font-size: 0.9em;
-        color: #000000;
+        font-size: 0.95em;
+        color: #111827;
+        white-space: pre-wrap;
         overflow-x: auto;
-        margin: 4px 0;
       }
-      
+
+      .llm-reader-chat-bubble .llm-reader-math-inline.latex-fallback,
+      .llm-reader-chat-bubble .llm-reader-math-inline.latex-error,
+      .llm-reader-chat-bubble .llm-reader-math-inline.llm-reader-math-pending {
+        display: inline-block;
+        margin: 0 0.12em;
+        padding: 0.08em 0.28em;
+        vertical-align: -0.18em;
+        white-space: nowrap;
+      }
+
       .llm-reader-chat-bubble .latex-error {
-        border-color: #ff6b6b;
-        background: #ffe6e6;
-        color: #d63031;
+        border-color: #f5c2c7;
+        background: #fff5f5;
+        color: #b42318;
       }
-      
-      /* KaTeX数学字体优化 */
-      .llm-reader-chat-bubble .katex {
-        font-family: 'KaTeX_Main', 'Computer Modern Roman', 'Latin Modern Math', 'Times New Roman', serif !important;
-      }
-      
-      .llm-reader-chat-bubble .katex .mord,
-      .llm-reader-chat-bubble .katex .mop,
-      .llm-reader-chat-bubble .katex .mib,
-      .llm-reader-chat-bubble .katex .mrel,
-      .llm-reader-chat-bubble .katex .mopen,
-      .llm-reader-chat-bubble .katex .mclose,
-      .llm-reader-chat-bubble .katex .mpunct,
-      .llm-reader-chat-bubble .katex .mord+.mop {
-        color: #000000 !important;
-      }
-      
-      /* LaTeX符号样式 */
-      .llm-reader-chat-bubble .katex .frac-line,
-      .llm-reader-chat-bubble .katex .sqrt-line,
-      .llm-reader-chat-bubble .katex .rule {
-        border-color: #000000 !important;
-      }
-      
-      /* LaTeX定界符样式 */
-      .llm-reader-chat-bubble .katex .delimsizing-size1,
-      .llm-reader-chat-bubble .katex .delimsizing-size2,
-      .llm-reader-chat-bubble .katex .delimsizing-size3,
-      .llm-reader-chat-bubble .katex .delimsizing-size4 {
-        color: #000000 !important;
-      }
-      
-      /* 确保所有KaTeX元素都使用黑色 */
-      .llm-reader-chat-bubble .katex * {
-        color: #000000 !important;
-      }
-      
-      .llm-reader-chat-bubble .katex .base {
-        color: #000000 !important;
-      }
-      
-      .llm-reader-chat-bubble .katex .accent-body,
-      .llm-reader-chat-bubble .katex .accent-body1,
-      .llm-reader-chat-bubble .katex .accent-body2 {
-        color: #000000 !important;
-      }
-      
-      .llm-reader-chat-bubble .katex .mord.tns,
-      .llm-reader-chat-bubble .katex .mord.phantom,
-      .llm-reader-chat-bubble .katex .mord.angl {
-        color: #000000 !important;
+
+      .llm-reader-chat-bubble .llm-reader-math-inline .katex,
+      .llm-reader-chat-bubble .llm-reader-math-inline .katex *,
+      .llm-reader-chat-bubble .llm-reader-math-block .katex,
+      .llm-reader-chat-bubble .llm-reader-math-block .katex * {
+        white-space: nowrap !important;
+        word-break: normal !important;
+        overflow-wrap: normal !important;
       }
       
       /* VSCode风格的代码块样式 */
@@ -1372,6 +1430,21 @@ if (!window.__llm_reader_overlay_injected__) {
   function createOverlay() {
     injectStyle();
 
+    function isPdfPage() {
+      const href = location.href || "";
+      const pathname = location.pathname || "";
+      const contentType = document.contentType || "";
+      const hasPdfEmbed = !!document.querySelector('embed[type="application/pdf"], iframe[src*=".pdf"], object[type="application/pdf"]');
+      return (
+        pathname.toLowerCase().endsWith(".pdf") ||
+        href.toLowerCase().includes(".pdf") ||
+        contentType === "application/pdf" ||
+        hasPdfEmbed
+      );
+    }
+
+    const pdfMode = isPdfPage();
+
     const floatBtn = document.createElement("div");
     floatBtn.className = "llm-reader-float-btn";
     
@@ -1388,6 +1461,9 @@ if (!window.__llm_reader_overlay_injected__) {
 
     const panel = document.createElement("div");
     panel.className = "llm-reader-panel";
+    if (pdfMode) {
+      panel.classList.add("llm-reader-panel-pdf");
+    }
     panel.style.display = "none";
 
     // header
@@ -1595,9 +1671,9 @@ if (!window.__llm_reader_overlay_injected__) {
     let activeLlmId = null;
 
     // 文字大小管理
-    let currentFontSize = 12; // 默认文字大小
-    const MIN_FONT_SIZE = 10;
-    const MAX_FONT_SIZE = 20;
+    let currentFontSize = pdfMode ? 15 : 12; // PDF 页面默认更大
+    const MIN_FONT_SIZE = pdfMode ? 13 : 10;
+    const MAX_FONT_SIZE = pdfMode ? 24 : 20;
     const FONT_SIZE_STEP = 1;
 
     // 问答导航相关变量
@@ -1747,6 +1823,7 @@ if (!window.__llm_reader_overlay_injected__) {
 
     // 渲染LaTeX公式的辅助函数
     function renderLatex(text, displayMode = false) {
+      const encodedSource = encodeLatexSource(text);
       try {
         if (typeof window.katex !== 'undefined' && window.katex) {
           const rendered = window.katex.renderToString(text, {
@@ -1764,19 +1841,22 @@ if (!window.__llm_reader_overlay_injected__) {
             }
           });
           
-          // 为行内公式添加包装类
           if (!displayMode) {
-            return `<span class="katex-inline">${rendered}</span>`;
+            return `<span class="llm-reader-math-inline">${rendered}</span>`;
           }
-          return rendered;
+          return `<div class="llm-reader-math-block">${rendered}</div>`;
         } else {
-          // 如果KaTeX未加载，显示原始LaTeX文本
           console.warn('KaTeX库未加载，显示原始LaTeX:', text);
-          return `<pre class="latex-fallback">${escapeHtml(text)}</pre>`;
+          const tagName = displayMode ? "div" : "span";
+          const className = displayMode
+            ? "llm-reader-math-block llm-reader-math-pending"
+            : "llm-reader-math-inline llm-reader-math-pending";
+          return `<${tagName} class="${className}" data-latex-source="${encodedSource}" data-display-mode="${displayMode}">${escapeHtml(text)}</${tagName}>`;
         }
       } catch (e) {
         console.warn('LaTeX渲染失败:', e, text);
-        return `<pre class="latex-error">${escapeHtml(text)}</pre>`;
+        const tagName = displayMode ? "div" : "span";
+        return `<${tagName} class="latex-error">${escapeHtml(text)}</${tagName}>`;
       }
     }
 
@@ -1848,9 +1928,21 @@ if (!window.__llm_reader_overlay_injected__) {
             latexBlocks.push({ content: content.trim(), displayMode: true });
             return `__LATEX_BLOCK_${index}__`;
           });
+
+          text = text.replace(/\\\[((?:.|\n)*?)\\\]/g, (match, content) => {
+            const index = latexBlocks.length;
+            latexBlocks.push({ content: content.trim(), displayMode: true });
+            return `__LATEX_BLOCK_${index}__`;
+          });
           
           // 提取LaTeX公式（行内）
           text = text.replace(/\$([^\$\n]+?)\$/g, (match, content) => {
+            const index = latexBlocks.length;
+            latexBlocks.push({ content: content.trim(), displayMode: false });
+            return `__LATEX_INLINE_${index}__`;
+          });
+
+          text = text.replace(/\\\((.+?)\\\)/g, (match, content) => {
             const index = latexBlocks.length;
             latexBlocks.push({ content: content.trim(), displayMode: false });
             return `__LATEX_INLINE_${index}__`;
@@ -1860,68 +1952,110 @@ if (!window.__llm_reader_overlay_injected__) {
         }
       });
       
-      // 现在处理Markdown语法
-      let html = "";
-      const textParts = processedMd.split(/(__CODE_BLOCK_\d+__|__LATEX_BLOCK_\d+__|__LATEX_INLINE_\d+__)/);
-      
-      textParts.forEach(part => {
-        // 如果是占位符，直接保留
-        if (part.match(/^__(?:CODE_BLOCK|LATEX_BLOCK|LATEX_INLINE)_\d+__$/)) {
-          html += part;
-          return;
-        }
-        
-        // 普通文本部分做简单 markdown 处理
-        let text = escapeHtml(part);
-        
-        // 按行处理，更精确地控制标题和换行
-        const lines = text.split('\n');
-        const processedLines = [];
-        
-        for (let i = 0; i < lines.length; i++) {
-          const line = lines[i];
-          // 检查是否是标题行
-          const titleMatch = line.match(/^\s*(#{1,6})\s+(.+?)\s*$/);
-          if (titleMatch) {
-            const level = titleMatch[1].length;
-            const content = titleMatch[2];
-            processedLines.push(`<h${level}>${content}</h${level}>`);
-          } else {
-            // 非标题行，保留原样（后续会处理换行）
-            processedLines.push(line);
-          }
-        }
-        
-        text = processedLines.join('\n');
-        
-        // 粗体 **text**
-        text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-        // 行内代码 `code` - 但要避免处理占位符
-        text = text.replace(/`([^`]+)`/g, (match, code) => {
-          if (code.match(/^__(?:CODE_BLOCK|LATEX_BLOCK|LATEX_INLINE)_\d+__$/)) {
-            return match; // 保留占位符
+      function renderInlineMarkdown(text) {
+        if (!text) return "";
+
+        let html = escapeHtml(text);
+        html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        html = html.replace(/`([^`]+)`/g, (match, code) => {
+          if (code.match(/^__LATEX_INLINE_\d+__$/)) {
+            return match;
           }
           return `<code>${code}</code>`;
         });
-        // 无序列表 - / * 开头的行（转成前缀符号）
-        text = text.replace(
-          /(^|\n)[\-\*]\s+(.+?)(?=\n|$)/g,
-          (_, p1, p2) => `${p1}• ${p2}`
-        );
-        // 网址自动变链接（简单判断）
-        text = text.replace(
-          /(https?:\/\/[^\s]+)/g,
+        html = html.replace(
+          /(https?:\/\/[^\s<]+)/g,
           '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
         );
-        
-        // 换行处理：标题标签是块级元素，前后不需要 <br>
-        // 移除标题前后的换行符
-        text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
-        text = text.replace(/\n\s*(<\/?h[1-6][^>]*>)/g, '$1');
-        text = text.replace(/(<\/?h[1-6][^>]*>)\s*\n/g, '$1');
-        // 处理剩余的换行
-        text = text.replace(/\n/g, "<br>");
-        html += text;
+        return html;
+      }
+
+      function renderTextSegment(segment) {
+        const lines = segment.split("\n");
+        const htmlParts = [];
+        let paragraphBuffer = [];
+        let listItems = [];
+        let listType = null;
+
+        function flushParagraph() {
+          if (!paragraphBuffer.length) return;
+          htmlParts.push(`<p>${renderInlineMarkdown(paragraphBuffer.join("<br>"))}</p>`);
+          paragraphBuffer = [];
+        }
+
+        function flushList() {
+          if (!listItems.length || !listType) return;
+          const itemsHtml = listItems
+            .map((item) => `<li>${renderInlineMarkdown(item)}</li>`)
+            .join("");
+          htmlParts.push(`<${listType}>${itemsHtml}</${listType}>`);
+          listItems = [];
+          listType = null;
+        }
+
+        lines.forEach((rawLine) => {
+          const line = rawLine.trimEnd();
+          const trimmed = line.trim();
+
+          if (!trimmed) {
+            flushParagraph();
+            flushList();
+            return;
+          }
+
+          const titleMatch = trimmed.match(/^(#{1,6})\s+(.+?)\s*$/);
+          if (titleMatch) {
+            flushParagraph();
+            flushList();
+            const level = titleMatch[1].length;
+            htmlParts.push(`<h${level}>${renderInlineMarkdown(titleMatch[2])}</h${level}>`);
+            return;
+          }
+
+          const unorderedMatch = trimmed.match(/^[-*]\s+(.+)$/);
+          if (unorderedMatch) {
+            flushParagraph();
+            if (listType && listType !== "ul") {
+              flushList();
+            }
+            listType = "ul";
+            listItems.push(unorderedMatch[1]);
+            return;
+          }
+
+          const orderedMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+          if (orderedMatch) {
+            flushParagraph();
+            if (listType && listType !== "ol") {
+              flushList();
+            }
+            listType = "ol";
+            listItems.push(orderedMatch[1]);
+            return;
+          }
+
+          flushList();
+          paragraphBuffer.push(trimmed);
+        });
+
+        flushParagraph();
+        flushList();
+
+        return htmlParts.join("");
+      }
+
+      // 现在处理Markdown语法
+      let html = "";
+      const textParts = processedMd.split(/(__CODE_BLOCK_\d+__|__LATEX_BLOCK_\d+__)/);
+      
+      textParts.forEach(part => {
+        // 如果是占位符，直接保留
+        if (part.match(/^__(?:CODE_BLOCK|LATEX_BLOCK)_\d+__$/)) {
+          html += part;
+          return;
+        }
+
+        html += renderTextSegment(part);
       });
 
       // 替换回LaTeX公式
@@ -2377,6 +2511,7 @@ if (!window.__llm_reader_overlay_injected__) {
             : "llm-reader-chat-bubble-user");
         bubble.className = bubbleClass;
         bubble.innerHTML = markdownToHtml(msg.content || "");
+        rerenderPendingMath(bubble);
         
         // 检查是否需要折叠（只对用户消息进行折叠）
         const textLength = (msg.content || "").length;
@@ -2517,6 +2652,7 @@ if (!window.__llm_reader_overlay_injected__) {
           ? "llm-reader-chat-bubble-assistant"
           : "llm-reader-chat-bubble-user");
       bubble.innerHTML = markdownToHtml(text || "");
+      rerenderPendingMath(bubble);
 
       item.appendChild(roleEl);
       item.appendChild(bubble);
@@ -3384,35 +3520,21 @@ ${bodyText}`,
         // 只保存有实际内容的对话（至少包含一个用户消息）
         const validHistory = messages.filter(msg => msg.role !== 'system' && msg.content.trim());
         if (validHistory.length === 0) return;
+        const pageData = await ensurePageData();
+        const response = await chrome.runtime.sendMessage({
+          type: "SAVE_CONVERSATION_HISTORY",
+          pageData: {
+            title: pageData?.title || document.title || "未知页面",
+            url: pageData?.url || window.location.href,
+          },
+          messages,
+          profileId: activeLlmId,
+        });
 
-        const now = new Date();
-        const historyItem = {
-          id: Date.now().toString(36) + '_' + Math.random().toString(16).slice(2, 8),
-          timestamp: Date.now(),
-          // 添加详细的年月日时间信息
-          date_string: now.toLocaleDateString('zh-CN'), // 如：2024/12/13
-          time_string: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }), // 如：14:30
-          datetime_string: now.toLocaleString('zh-CN'), // 如：2024/12/13 14:30:00
-          iso_string: now.toISOString(), // ISO格式：2024-12-13T06:30:00.000Z
-          url: window.location.href,
-          title: document.title || '未知页面',
-          messages: messages,
-          preview: generateHistoryPreview(validHistory)
-        };
-
-        // 获取现有历史记录（使用local存储，避免sync配额限制）
-        const result = await chrome.storage.local.get(['chatHistory']);
-        const existingHistory = result.chatHistory || [];
-        
-        // 添加新记录到开头
-        existingHistory.unshift(historyItem);
-        
-        // 限制历史记录数量（最多保存100条）
-        if (existingHistory.length > 100) {
-          existingHistory.splice(100);
+        if (!response?.ok) {
+          throw new Error(response?.error || "保存失败");
         }
 
-        await chrome.storage.local.set({ chatHistory: existingHistory });
         // 显示保存成功提示
         setStatus(t("history_saved", currentLang), false);
         setTimeout(() => setStatus(""), 2000);
@@ -3438,8 +3560,13 @@ ${bodyText}`,
     // 加载对话历史
     async function loadChatHistory() {
       try {
-        const result = await chrome.storage.local.get(['chatHistory']);
-        chatHistory = result.chatHistory || [];
+        const response = await chrome.runtime.sendMessage({
+          type: "GET_CONVERSATION_HISTORY",
+        });
+        if (!response?.ok) {
+          throw new Error(response?.error || "加载失败");
+        }
+        chatHistory = response.history || [];
         return chatHistory;
       } catch (e) {
         console.error('加载对话历史失败:', e);
@@ -3533,6 +3660,29 @@ ${bodyText}`,
       const countEl = overlay.querySelector("#history-count");
       const clearBtn = overlay.querySelector("#history-clear-btn");
 
+      function getHistoryPreviewText(item) {
+        return generateHistoryPreview((item.messages || []).filter(msg => msg.role !== "system")) || "";
+      }
+
+      function filterHistoryItemsLocally(historyItems, query) {
+        if (!query) return historyItems;
+
+        return historyItems.filter(item =>
+          (item.title && item.title.toLowerCase().includes(query)) ||
+          (getHistoryPreviewText(item) && getHistoryPreviewText(item).toLowerCase().includes(query)) ||
+          (item.url && item.url.toLowerCase().includes(query))
+        );
+      }
+
+      function getHistoryUrlLabel(url) {
+        if (!url) return "";
+        try {
+          return new URL(url).hostname;
+        } catch {
+          return url;
+        }
+      }
+
       // 渲染历史记录列表
       function renderHistoryList(historyItems) {
         listEl.innerHTML = "";
@@ -3569,14 +3719,9 @@ ${bodyText}`,
 
         const dateEl = document.createElement("div");
         dateEl.className = "llm-reader-history-item-date";
-        // 优先使用新的详细时间信息，如果没有则回退到原来的格式化函数
-        if (item.datetime_string) {
-          dateEl.textContent = item.datetime_string;
-        } else {
-          dateEl.textContent = formatDate(item.timestamp);
-        }
-        // 添加title属性，鼠标悬停时显示完整的ISO时间
-        dateEl.title = item.iso_string || new Date(item.timestamp).toISOString();
+        const itemTimestamp = item.updated_at || item.created_at || Date.now();
+        dateEl.textContent = formatDate(itemTimestamp);
+        dateEl.title = new Date(itemTimestamp).toISOString();
 
         headerEl.appendChild(titleEl);
         headerEl.appendChild(dateEl);
@@ -3589,10 +3734,10 @@ ${bodyText}`,
         urlEl.className = "llm-reader-history-item-url";
         urlEl.href = item.url;
         urlEl.target = "_blank";
-        urlEl.textContent = new URL(item.url).hostname;
+        urlEl.textContent = getHistoryUrlLabel(item.url);
 
         const messageCountEl = document.createElement("span");
-        messageCountEl.textContent = `${item.messages.filter(m => m.role !== 'system').length} ${t("history_messages", currentLang)}`;
+        messageCountEl.textContent = `${(item.messages || []).filter(m => m.role !== 'system').length} ${t("history_messages", currentLang)}`;
 
         metaEl.appendChild(urlEl);
         metaEl.appendChild(messageCountEl);
@@ -3600,7 +3745,7 @@ ${bodyText}`,
         // 预览
         const previewEl = document.createElement("div");
         previewEl.className = "llm-reader-history-item-preview";
-        previewEl.textContent = item.preview || '';
+        previewEl.textContent = getHistoryPreviewText(item);
 
         // 操作按钮
         const actionsEl = document.createElement("div");
@@ -3659,16 +3804,24 @@ ${bodyText}`,
       }
 
       // 搜索功能
-      searchInput.addEventListener("input", () => {
+      searchInput.addEventListener("input", async () => {
         const query = searchInput.value.toLowerCase().trim();
         let filteredHistory = chatHistory;
 
         if (query) {
-          filteredHistory = chatHistory.filter(item =>
-            (item.title && item.title.toLowerCase().includes(query)) ||
-            (item.preview && item.preview.toLowerCase().includes(query)) ||
-            (item.url && item.url.toLowerCase().includes(query))
-          );
+          try {
+            const response = await chrome.runtime.sendMessage({
+              type: "SEARCH_CONVERSATION_HISTORY",
+              query,
+            });
+            if (!response?.ok) {
+              throw new Error(response?.error || "搜索失败");
+            }
+            filteredHistory = response.results || [];
+          } catch (e) {
+            console.error("搜索历史记录失败:", e);
+            filteredHistory = filterHistoryItemsLocally(chatHistory, query);
+          }
         }
 
         renderHistoryList(filteredHistory);
@@ -3678,7 +3831,12 @@ ${bodyText}`,
       clearBtn.addEventListener("click", async () => {
         if (confirm(t("history_clear_confirm", currentLang))) {
           try {
-            await chrome.storage.sync.set({ chatHistory: [] });
+            const response = await chrome.runtime.sendMessage({
+              type: "CLEAR_ALL_HISTORY",
+            });
+            if (!response?.ok) {
+              throw new Error(response?.error || "清空失败");
+            }
             chatHistory = [];
             renderHistoryList([]);
           } catch (e) {
@@ -3707,22 +3865,18 @@ ${bodyText}`,
       // 删除历史记录项
       async function deleteHistoryItem(itemId) {
         try {
+          const response = await chrome.runtime.sendMessage({
+            type: "DELETE_CONVERSATION",
+            conversationId: itemId,
+          });
+          if (!response?.ok) {
+            throw new Error(response?.error || "删除失败");
+          }
           chatHistory = chatHistory.filter(item => item.id !== itemId);
-          await chrome.storage.sync.set({ chatHistory });
           
           // 重新渲染列表
           const query = searchInput.value.toLowerCase().trim();
-          let filteredHistory = chatHistory;
-          
-          if (query) {
-            filteredHistory = chatHistory.filter(item =>
-              (item.title && item.title.toLowerCase().includes(query)) ||
-              (item.preview && item.preview.toLowerCase().includes(query)) ||
-              (item.url && item.url.toLowerCase().includes(query))
-            );
-          }
-          
-          renderHistoryList(filteredHistory);
+          renderHistoryList(filterHistoryItemsLocally(chatHistory, query));
         } catch (e) {
           console.error('删除历史记录失败:', e);
           alert(t("history_delete_error", currentLang));
@@ -3802,5 +3956,3 @@ ${bodyText}`,
     createOverlay();
   }
 }
-
-
