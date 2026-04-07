@@ -178,6 +178,67 @@
     }
   }
 
+  function pushLatexPlaceholder(latexBlocks, content, displayMode = false) {
+    const index = latexBlocks.length;
+    latexBlocks.push({ content: String(content || "").trim(), displayMode });
+    return displayMode ? `__LATEX_BLOCK_${index}__` : `__LATEX_INLINE_${index}__`;
+  }
+
+  function replaceBareLatexInline(text, latexBlocks) {
+    if (!text || !latexBlocks) return text || "";
+
+    const protectedInlineMath = [];
+    let processed = String(text);
+
+    processed = processed.replace(/__LATEX_INLINE_\d+__/g, (match) => {
+      const index = protectedInlineMath.length;
+      protectedInlineMath.push(match);
+      return `__PROTECTED_LATEX_INLINE_${index}__`;
+    });
+
+    processed = processed.replace(
+      /(^|[^A-Za-z\\])((?:\\[A-Za-z]+)(?:\s*(?:\{[^{}\n]*\}|\[[^\]\n]*\]|_(?:[A-Za-z0-9]+|\{[^{}\n]+\})|\^(?:[A-Za-z0-9]+|\{[^{}\n]+\})))*)(?=$|[\s,.;:!?，。；：！？、)）\]}])/g,
+      (match, prefix, latex) => `${prefix}${pushLatexPlaceholder(latexBlocks, latex, false)}`
+    );
+
+    processed = processed.replace(
+      /(^|[^A-Za-z0-9\\])([A-Za-z](?:(?:\s*_(?:[A-Za-z0-9]+|\{[^{}\n]+\}))|(?:\s*\^(?:[A-Za-z0-9+\-*/=]+|\{[^{}\n]+\})))+)(?=$|[\s,.;:!?，。；：！？、)）\]}])/g,
+      (match, prefix, latex) => `${prefix}${pushLatexPlaceholder(latexBlocks, latex, false)}`
+    );
+
+    processed = processed.replace(/__PROTECTED_LATEX_INLINE_(\d+)__/g, (match, index) => {
+      return protectedInlineMath[parseInt(index, 10)] || match;
+    });
+
+    return processed;
+  }
+
+  function isBareLatexExpression(text) {
+    if (!text || typeof text !== "string") return false;
+
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+
+    if (/^\\[A-Za-z]+(?:\s*(?:\{[^{}\n]*\}|\[[^\]\n]*\]|_(?:[A-Za-z0-9]+|\{[^{}\n]+\})|\^(?:[A-Za-z0-9]+|\{[^{}\n]+\})))*$/.test(trimmed)) {
+      return true;
+    }
+
+    return /^[A-Za-z](?:(?:\s*_(?:[A-Za-z0-9]+|\{[^{}\n]+\}))|(?:\s*\^(?:[A-Za-z0-9+\-*/=]+|\{[^{}\n]+\})))+$/.test(trimmed);
+  }
+
+  function isStandaloneLatexLine(text) {
+    if (!text || typeof text !== "string") return false;
+
+    const trimmed = text.trim();
+    if (!trimmed) return false;
+    if (/^\\[\[\(].*[\\\]\)]$/.test(trimmed)) return false;
+    if (/[*`#<>\[\]]/.test(trimmed)) return false;
+    if (isBareLatexExpression(trimmed)) return true;
+    if (!trimmed.includes("\\")) return false;
+
+    return /^[-+*/=(){}[\]\\_^&,%.:;!?\sA-Za-z0-9]+$/.test(trimmed);
+  }
+
   function markdownToHtml(md) {
     if (!md) return "";
 
@@ -225,11 +286,10 @@
       });
 
       text = text.replace(/\\\((.+?)\\\)/g, (match, content) => {
-        const indexOfBlock = latexBlocks.length;
-        latexBlocks.push({ content: content.trim(), displayMode: false });
-        return `__LATEX_INLINE_${indexOfBlock}__`;
+        return pushLatexPlaceholder(latexBlocks, content, false);
       });
 
+      text = replaceBareLatexInline(text, latexBlocks);
       processedMd += text;
     });
 
@@ -286,6 +346,13 @@
           return;
         }
 
+        if (isStandaloneLatexLine(trimmed)) {
+          flushParagraph();
+          flushList();
+          htmlParts.push(renderLatex(trimmed, true));
+          return;
+        }
+
         const titleMatch = trimmed.match(/^(#{1,6})\s+(.+?)\s*$/);
         if (titleMatch) {
           flushParagraph();
@@ -329,11 +396,11 @@
 
     let html = "";
     const textParts = processedMd.split(
-      /(__CODE_BLOCK_\d+__|__LATEX_BLOCK_\d+__|__LATEX_INLINE_\d+__)/
+      /(__CODE_BLOCK_\d+__|__LATEX_BLOCK_\d+__)/
     );
 
     textParts.forEach((part) => {
-      if (part.match(/^__(?:CODE_BLOCK|LATEX_BLOCK|LATEX_INLINE)_\d+__$/)) {
+      if (part.match(/^__(?:CODE_BLOCK|LATEX_BLOCK)_\d+__$/)) {
         html += part;
         return;
       }

@@ -2,7 +2,9 @@
 // 在页面上下文中提取可读文本内容，返回给 background 使用。
 
 const MAX_TEXT_LEN = 8000000;
-const PDF_PAGE_LIMIT = 200;
+const PDF_PAGE_LIMIT = 120;
+const PDF_TEXT_SOFT_LIMIT = 1200000;
+const PDF_YIELD_EVERY_PAGES = 5;
 
 function cleanExtractedText(text) {
   let normalized = String(text || "");
@@ -144,21 +146,13 @@ async function extractPdfText(pdfUrl) {
     "vendor/pdfjs/package/build/pdf.worker.mjs"
   );
 
-  const response = await fetch(pdfUrl, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    throw new Error(`PDF 下载失败：${response.status}`);
-  }
-
-  const arrayBuffer = await response.arrayBuffer();
   const loadingTask = pdfjs.getDocument({
-    data: new Uint8Array(arrayBuffer),
+    url: pdfUrl,
+    withCredentials: true,
     cMapUrl: chrome.runtime.getURL("vendor/pdfjs/package/cmaps/"),
     cMapPacked: true,
     standardFontDataUrl: chrome.runtime.getURL("vendor/pdfjs/package/standard_fonts/"),
-    useWorkerFetch: false,
+    useWorkerFetch: true,
     isEvalSupported: false,
   });
 
@@ -168,19 +162,38 @@ async function extractPdfText(pdfUrl) {
     const metadata = await pdfDocument.getMetadata().catch(() => null);
     const extractedPages = Math.min(pdfDocument.numPages, PDF_PAGE_LIMIT);
     const pageTexts = [];
+    let reachedSoftLimit = false;
+    let accumulatedLength = 0;
 
     for (let pageNumber = 1; pageNumber <= extractedPages; pageNumber += 1) {
       const page = await pdfDocument.getPage(pageNumber);
-      const textContent = await page.getTextContent();
-      const pageText = normalizePdfTextItems(textContent.items);
+      try {
+        const textContent = await page.getTextContent();
+        const pageText = normalizePdfTextItems(textContent.items);
 
-      if (pageText) {
-        pageTexts.push(`[第 ${pageNumber} 页]\n${pageText}`);
+        if (pageText) {
+          const pageChunk = `[第 ${pageNumber} 页]\n${pageText}`;
+          pageTexts.push(pageChunk);
+          accumulatedLength += pageChunk.length;
+
+          if (accumulatedLength >= PDF_TEXT_SOFT_LIMIT) {
+            reachedSoftLimit = true;
+            break;
+          }
+        }
+      } finally {
+        page.cleanup();
+      }
+
+      if (pageNumber % PDF_YIELD_EVERY_PAGES === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
       }
     }
 
     let text = pageTexts.join("\n\n");
-    if (pdfDocument.numPages > extractedPages) {
+    if (reachedSoftLimit) {
+      text += `\n\n[PDF 文本较长，已在约 ${PDF_TEXT_SOFT_LIMIT.toLocaleString()} 字后提前停止提取]`;
+    } else if (pdfDocument.numPages > extractedPages) {
       text += `\n\n[PDF 共 ${pdfDocument.numPages} 页，仅提取前 ${extractedPages} 页内容]`;
     }
 
@@ -193,6 +206,7 @@ async function extractPdfText(pdfUrl) {
     };
   } finally {
     await pdfDocument.destroy();
+    await loadingTask.destroy();
   }
 }
 
@@ -240,4 +254,3 @@ async function getPageText() {
 
 // 作为 executeScript 的返回值
 getPageText();
-
