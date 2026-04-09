@@ -1392,6 +1392,16 @@ if (!window.__llm_reader_overlay_injected__) {
     analyzeBtn.style.fontSize = "var(--llm-reader-analyze-btn-font-size)";
     analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
 
+    const analyzePaperBtn = document.createElement("button");
+    analyzePaperBtn.className = "llm-reader-btn";
+    analyzePaperBtn.style.fontSize = "var(--llm-reader-analyze-btn-font-size)";
+    analyzePaperBtn.textContent = t("overlay_analyze_paper_btn", currentLang);
+
+    const translateBtn = document.createElement("button");
+    translateBtn.className = "llm-reader-btn";
+    translateBtn.style.fontSize = "var(--llm-reader-analyze-btn-font-size)";
+    translateBtn.textContent = t("overlay_translate_btn", currentLang);
+
     const historyBtn = document.createElement("button");
     historyBtn.className = "llm-reader-settings-btn";
     historyBtn.title = t("overlay_history_btn", currentLang);
@@ -1452,6 +1462,8 @@ if (!window.__llm_reader_overlay_injected__) {
     mainActionsGroup.className = "llm-reader-actions-group";
     mainActionsGroup.appendChild(profileSelect);
     mainActionsGroup.appendChild(analyzeBtn);
+    mainActionsGroup.appendChild(analyzePaperBtn);
+    mainActionsGroup.appendChild(translateBtn);
 
     const readingActionsGroup = document.createElement("div");
     readingActionsGroup.className = "llm-reader-actions-group";
@@ -2519,12 +2531,37 @@ if (!window.__llm_reader_overlay_injected__) {
       openHistoryPanel();
     });
 
-    analyzeBtn.addEventListener("click", async () => {
+    async function startAnalysis(mode) {
       if (isStreaming) return;
-      
+
+      const modeConfig = {
+        page: {
+          promptSystemKey: "prompt_system",
+          promptUserIntroKey: "prompt_user_intro",
+          askKey: "overlay_ask_analyze",
+          analyzingKey: "overlay_analyzing",
+          analyzeDoneKey: "overlay_analyze_done",
+        },
+        paper: {
+          promptSystemKey: "prompt_paper_system",
+          promptUserIntroKey: "prompt_paper_user_intro",
+          askKey: "overlay_ask_analyze_paper",
+          analyzingKey: "overlay_analyzing_paper",
+          analyzeDoneKey: "overlay_analyze_paper_done",
+        },
+        translate: {
+          promptSystemKey: "prompt_translate_system",
+          promptUserIntroKey: "prompt_translate_user_intro",
+          askKey: "overlay_ask_translate",
+          analyzingKey: "overlay_translating",
+          analyzeDoneKey: "overlay_translate_done",
+        },
+      };
+      const config = modeConfig[mode] || modeConfig.page;
+
       // 设置流式状态（显示暂停按钮）
       setStreamingState(true);
-      
+
       chatList.innerHTML = "";
       messages = [];
       currentQaIndex = -1; // 重置导航索引
@@ -2537,11 +2574,11 @@ if (!window.__llm_reader_overlay_injected__) {
 
         const systemMsg = {
           role: "system",
-          content: t("prompt_system", currentLang),
+          content: t(config.promptSystemKey, currentLang),
         };
         const userMsg = {
           role: "user",
-          content: `${t("prompt_user_intro", currentLang)}
+          content: `${t(config.promptUserIntroKey, currentLang)}
 
 ${t("prompt_page_title", currentLang)}${titleText}
 ${t("prompt_page_link", currentLang)}${urlText}
@@ -2551,9 +2588,9 @@ ${bodyText}`,
         };
 
         messages = [systemMsg, userMsg];
-        appendChatItem("user", t("overlay_ask_analyze", currentLang));
+        appendChatItem("user", t(config.askKey, currentLang));
         const assistantBubble = appendChatItem("assistant", "");
-        setStatus(t("overlay_analyzing", currentLang));
+        setStatus(t(config.analyzingKey, currentLang));
 
         await streamChat(
           messages,
@@ -2563,7 +2600,7 @@ ${bodyText}`,
           },
           async (full) => {
             messages.push({ role: "assistant", content: full });
-            setStatus(t("overlay_analyze_done", currentLang));
+            setStatus(t(config.analyzeDoneKey, currentLang));
             // 更新问答对和导航，但保持用户当前位置不变
             qaPairs = extractQaPairs(messages);
             if (qaPairs.length > 0) {
@@ -2581,6 +2618,18 @@ ${bodyText}`,
         // 使用统一的流式状态设置函数（隐藏暂停按钮）
         setStreamingState(false);
       }
+    }
+
+    analyzeBtn.addEventListener("click", async () => {
+      await startAnalysis("page");
+    });
+
+    analyzePaperBtn.addEventListener("click", async () => {
+      await startAnalysis("paper");
+    });
+
+    translateBtn.addEventListener("click", async () => {
+      await startAnalysis("translate");
     });
 
     async function sendUserMessage() {
@@ -2633,6 +2682,8 @@ ${bodyText}`,
       isStreaming = streaming;
       sendBtn.disabled = streaming;
       analyzeBtn.disabled = streaming;
+      analyzePaperBtn.disabled = streaming;
+      translateBtn.disabled = streaming;
       input.disabled = streaming;
       
       // 显示/隐藏暂停按钮
@@ -2696,6 +2747,8 @@ ${bodyText}`,
     // 更新所有 UI 文本（用于语言切换后刷新）
     function updateUITexts() {
       analyzeBtn.textContent = t("overlay_analyze_btn", currentLang);
+      analyzePaperBtn.textContent = t("overlay_analyze_paper_btn", currentLang);
+      translateBtn.textContent = t("overlay_translate_btn", currentLang);
       settingsBtn.title = t("overlay_settings_btn", currentLang);
       sendBtn.textContent = t("overlay_send_btn", currentLang);
       pauseBtn.textContent = t("overlay_pause_btn", currentLang);
