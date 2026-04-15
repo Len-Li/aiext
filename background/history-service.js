@@ -96,19 +96,26 @@ export async function saveConversationHistory(pageData, messages, profileId) {
   try {
     const history = await getConversationHistory();
     const now = new Date().toISOString();
+    const conversationId = typeof pageData?.conversationId === "string" ? pageData.conversationId : "";
+    const existingConversation = conversationId
+      ? history.find((conversation) => conversation.id === conversationId)
+      : null;
     const conversation = {
-      id: generateConversationId(),
+      id: existingConversation?.id || generateConversationId(),
       title: generateConversationTitle(pageData, messages),
-      url: pageData?.url || "",
-      page_title: pageData?.title || "",
-      profile_id: profileId || "",
+      url: pageData?.url || existingConversation?.url || "",
+      page_title: pageData?.title || existingConversation?.page_title || "",
+      profile_id: profileId || existingConversation?.profile_id || "",
       messages: Array.isArray(messages) ? messages : [],
-      created_at: now,
+      created_at: existingConversation?.created_at || now,
       updated_at: now,
       message_count: Array.isArray(messages) ? messages.length : 0,
     };
 
-    const nextHistory = [conversation, ...history];
+    const restHistory = existingConversation
+      ? history.filter((item) => item.id !== existingConversation.id)
+      : history;
+    const nextHistory = [conversation, ...restHistory];
     const cleanedHistory = await cleanupHistory(nextHistory);
 
     await chrome.storage.local.set({

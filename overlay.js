@@ -1590,7 +1590,7 @@ if (!window.__llm_reader_overlay_injected__) {
     let activeLlmId = null;
 
     // 文字大小管理
-    let currentFontSize = pdfMode ? 15 : 12; // PDF 页面默认更大
+    let currentFontSize = pdfMode ? 24 : 12; // PDF 页面默认字号为 24
     const MIN_FONT_SIZE = pdfMode ? 13 : 10;
     const MAX_FONT_SIZE = pdfMode ? 24 : 20;
     const FONT_SIZE_STEP = 1;
@@ -1598,6 +1598,7 @@ if (!window.__llm_reader_overlay_injected__) {
     // 问答导航相关变量
     let currentQaIndex = -1; // 当前显示的问答索引，-1表示显示全部
     let qaPairs = []; // 问答对数组
+    let currentConversationId = null;
 
     // 双击快捷键相关变量
     let lastKeyPress = null;
@@ -2565,6 +2566,7 @@ if (!window.__llm_reader_overlay_injected__) {
       chatList.innerHTML = "";
       messages = [];
       currentQaIndex = -1; // 重置导航索引
+      currentConversationId = null;
 
       try {
         const pageData = await ensurePageData();
@@ -3219,6 +3221,7 @@ ${bodyText}`,
           pageData: {
             title: pageData?.title || document.title || "未知页面",
             url: pageData?.url || window.location.href,
+            conversationId: currentConversationId,
           },
           messages,
           profileId: activeLlmId,
@@ -3227,6 +3230,7 @@ ${bodyText}`,
         if (!response?.ok) {
           throw new Error(response?.error || "保存失败");
         }
+        currentConversationId = response.conversationId || currentConversationId;
 
         // 显示保存成功提示
         setStatus(t("history_saved", currentLang), false);
@@ -3531,6 +3535,7 @@ ${bodyText}`,
               throw new Error(response?.error || "清空失败");
             }
             chatHistory = [];
+            currentConversationId = null;
             renderHistoryList([]);
           } catch (e) {
             console.error('清空历史记录失败:', e);
@@ -3543,6 +3548,7 @@ ${bodyText}`,
       async function loadHistoryItem(item) {
         try {
           messages = [...item.messages];
+          currentConversationId = item.id || null;
           currentQaIndex = -1;
           updateNavigation();
           closeHistoryPanel();
@@ -3566,6 +3572,9 @@ ${bodyText}`,
             throw new Error(response?.error || "删除失败");
           }
           chatHistory = chatHistory.filter(item => item.id !== itemId);
+          if (currentConversationId === itemId) {
+            currentConversationId = null;
+          }
           
           // 重新渲染列表
           const query = searchInput.value.toLowerCase().trim();
